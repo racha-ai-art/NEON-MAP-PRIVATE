@@ -1,4 +1,4 @@
-# วิธีอัป NEON MAP v0.9.8 ไป GitHub แบบส่วนตัว และติดตั้งใน SillyTavern
+# วิธีอัป NEON MAP v0.9.10 ไป GitHub แบบส่วนตัว และติดตั้งใน SillyTavern
 
 > **สำคัญ:** ชุดนี้เตรียมไว้เป็นส่วนขยายสำหรับ GitHub แล้ว แต่ยังไม่ได้ทดสอบกับเซิร์ฟเวอร์ SillyTavern จริง การทดสอบที่ทำเป็นการจำลองบริบทในเบราว์เซอร์ แนะนำให้สำรองแชทก่อนติดตั้ง
 
@@ -16,7 +16,7 @@
 4. จะเลือกสร้าง README เริ่มต้นหรือไม่ก็ได้; ชุดไฟล์นี้มี README มาแล้ว การสร้าง repo เปล่าจะง่ายกว่า.
 5. กด **Create repository**.
 6. เข้า repo → **Add file** → **Upload files** → ลากไฟล์ทั้งหมดจากโฟลเดอร์ที่แตก ZIP มาใส่ **ที่รากของ repo** (GitHub เว็บอาจซ่อนไฟล์ `.gitignore` บางกรณี; อัปเฉพาะไฟล์หลักก็ใช้ได้).
-7. เลื่อนลง ตั้ง Commit message เช่น `Add NEON MAP v0.9.8`, กด **Commit changes** / **Propose changes** ตามหน้าจอ.
+7. เลื่อนลง ตั้ง Commit message เช่น `Add NEON MAP v0.9.10`, กด **Commit changes** / **Propose changes** ตามหน้าจอ.
 8. ตรวจในหน้าแรกของ repo ว่ามี `manifest.json` และ `index.js` โดยตรง ไม่ใช่อยู่ในโฟลเดอร์ซ้อนสองชั้น.
 
 ตัวอย่างโครงสร้างที่ **ถูกต้อง**:
@@ -92,9 +92,28 @@ GitHub **Private repository** ต้องมีสิทธิ์เข้า�
 - GitHub upload files: https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
 
 
-## v0.9.8 UI controls
+## v0.9.10 UI controls
 
 - Floating round MAP bubble: drag to move, tap to open. The saved position stays in your browser.
 - Bottom map sheet: header minus/expand buttons adjust height. Drag the top strip to resize height; top-left corner adjusts height and width.
 - Mobile: Info toggles between the atlas and notes/settings. Close X returns to the floating bubble.
 - All UI layout settings stay in local browser storage; no new prompt tokens or image credits.
+
+## กรณีไม่มีปุ่มลอยแม้อัปเดตแล้ว
+
+- ตรวจว่า Extensions > Manage Extensions แสดง `NEON MAP` **เวอร์ชัน 0.9.10** และเปิดใช้งาน
+- รีโหลด SillyTavern แบบไม่ใช้แคช และหากจำเป็นให้ปิด/เปิดเซิร์ฟเวอร์ใหม่
+- หากเห็นปุ่ม `MAP !` ให้กดเพื่ออ่านข้อผิดพลาดที่ตรวจพบ
+- หากไม่เห็นทั้ง `MAP` และ `MAP !` เป็นไปได้ว่าส่วนขยายไม่ได้โหลดเลย (ตรวจรายการส่วนขยาย/คอนโซลเบราว์เซอร์/Server Log)
+- `manifest.json` ต้องอยู่ที่ root ของส่วนขยาย และ `js` ต้องชี้ `bootstrap.js`
+
+
+## การเปิดแผนที่จากในแชท (v0.9.10)
+
+1. เปิดแชทตัวละครใน SillyTavern เหมือนปกติ
+2. มองหา **ปุ่มกลมสีเขียวฟ้า MAP** ที่อยู่ด้านขวาบริเวณเหนือช่องพิมพ์ (ตัวปุ่มอยู่ภายในพื้นที่แชทจริง)
+3. กด MAP หน้าต่างแผนที่เปิดซ้อนขึ้นด้านล่างในหน้าแชทเดิม ไม่ต้องย้อนออกจากแชท
+4. กดปุ่ม **X มุมขวาบนของหน้าต่างแผนที่** เพื่อพับกลับไปเป็นปุ่ม MAP
+5. กดค้างแล้วลากปุ่ม MAP เพื่อย้ายตำแหน่งภายในหน้าแชท โปรแกรมจะพยายามจำตำแหน่งบนอุปกรณ์นี้
+
+ถ้าปุ่ม MAP ไม่ขึ้นเลย ให้ดู Manage Extensions ว่าส่วนขยาย NEON MAP เป็น **v0.9.10** และเปิดใช้งานอยู่ ต้องรีสตาร์ตเซิร์ฟเวอร์และรีโหลดหน้าเบราว์เซอร์เพื่อให้ไฟล์ bootstrap.js ใหม่ทำงาน หากเห็น **MAP !** สามารถกดเพื่ออ่านข้อความผิดพลาดได้ อย่าลง Repository เดียวซ้ำหลายชื่อเพราะอาจเกิดการเปิดแผนที่ซ้อนกัน
