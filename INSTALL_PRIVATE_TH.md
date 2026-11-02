@@ -1,4 +1,4 @@
-# วิธีอัป NEON MAP v0.9.7 ไป GitHub แบบส่วนตัว และติดตั้งใน SillyTavern
+# วิธีอัป NEON MAP v0.9.8 ไป GitHub แบบส่วนตัว และติดตั้งใน SillyTavern
 
 > **สำคัญ:** ชุดนี้เตรียมไว้เป็นส่วนขยายสำหรับ GitHub แล้ว แต่ยังไม่ได้ทดสอบกับเซิร์ฟเวอร์ SillyTavern จริง การทดสอบที่ทำเป็นการจำลองบริบทในเบราว์เซอร์ แนะนำให้สำรองแชทก่อนติดตั้ง
 
@@ -16,7 +16,7 @@
 4. จะเลือกสร้าง README เริ่มต้นหรือไม่ก็ได้; ชุดไฟล์นี้มี README มาแล้ว การสร้าง repo เปล่าจะง่ายกว่า.
 5. กด **Create repository**.
 6. เข้า repo → **Add file** → **Upload files** → ลากไฟล์ทั้งหมดจากโฟลเดอร์ที่แตก ZIP มาใส่ **ที่รากของ repo** (GitHub เว็บอาจซ่อนไฟล์ `.gitignore` บางกรณี; อัปเฉพาะไฟล์หลักก็ใช้ได้).
-7. เลื่อนลง ตั้ง Commit message เช่น `Add NEON MAP v0.9.7`, กด **Commit changes** / **Propose changes** ตามหน้าจอ.
+7. เลื่อนลง ตั้ง Commit message เช่น `Add NEON MAP v0.9.8`, กด **Commit changes** / **Propose changes** ตามหน้าจอ.
 8. ตรวจในหน้าแรกของ repo ว่ามี `manifest.json` และ `index.js` โดยตรง ไม่ใช่อยู่ในโฟลเดอร์ซ้อนสองชั้น.
 
 ตัวอย่างโครงสร้างที่ **ถูกต้อง**:
@@ -90,3 +90,11 @@ GitHub **Private repository** ต้องมีสิทธิ์เข้า�
 - SillyTavern extensions: https://docs.sillytavern.app/extensions/
 - GitHub create repo: https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository
 - GitHub upload files: https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
+
+
+## v0.9.8 UI controls
+
+- Floating round MAP bubble: drag to move, tap to open. The saved position stays in your browser.
+- Bottom map sheet: header minus/expand buttons adjust height. Drag the top strip to resize height; top-left corner adjusts height and width.
+- Mobile: Info toggles between the atlas and notes/settings. Close X returns to the floating bubble.
+- All UI layout settings stay in local browser storage; no new prompt tokens or image credits.
