@@ -1,8 +1,8 @@
-# NEON MAP v0.9.9 (Private)
+# NEON MAP v0.9.10 (Private)
 
 A third-party UI extension for **SillyTavern**, prepared from the NEON MAP v0.9.7 standalone prototype for personal use.
 
-**Version:** 0.9.8  
+**Version:** 0.9.10  
 **Installation status:** Repository structure and browser mock tests verified; **not yet verified against a live SillyTavern server**.  
 **Repo visibility recommendation:** **Private**.
 
@@ -41,7 +41,7 @@ Read **[INSTALL_PRIVATE_TH.md](INSTALL_PRIVATE_TH.md)**. In short:
 
 This repository intentionally does not include the Standalone Demo or any fabricated demo conversations.
 
-## v0.9.9 Floating Bottom Map UI
+## v0.9.10 Floating Bottom Map UI
 
 - Draggable circular MAP bubble with UI-only saved coordinates.
 - Bubble click opens a resizable, bottom-docked window over SillyTavern. No full-screen takeover.
@@ -50,9 +50,24 @@ This repository intentionally does not include the Standalone Demo or any fabric
 - Auto-open is optional and defaults OFF even for older installs.
 - Does not add prompt tokens or paid image operations. Private repo installation requires Git authentication.
 
-## Missing MAP button troubleshooting (v0.9.9)
+## Troubleshooting a missing floating button (v0.9.10)
 
-- `bootstrap.js` is the new entry point and creates a MAP bubble before loading the main map engine.
-- If map initialization fails, the fallback button changes to `MAP !`; tap it to see an error message.
-- If neither `MAP` nor `MAP !` appears, SillyTavern has not loaded this extension. Check Manage Extensions, enable it, refresh browser cache and restart the server.
-- Verify `manifest.json` is v0.9.9 with `js: bootstrap.js`.
+- `bootstrap.js` is the new entry point. It places a visible circular MAP fallback button **before** loading the main map engine.
+- When the main engine starts, the fallback button disappears and the normal draggable MAP button takes over.
+- If the main engine fails, the fallback changes to **MAP !** and can be clicked to view the error.
+- If **neither MAP nor MAP ! appears**, SillyTavern is not executing this installed extension, or the client has cached an older version. Check Extensions > Manage Extensions, update/reinstall the extension and fully reload.
+- To verify the exact version, check `manifest.json` (0.9.10, `js`: `bootstrap.js`).
+- Reload SillyTavern after updating. A browser hard refresh may be needed if assets are cached.
+
+The local map does not use image credits and does not inject roleplay-model prompts. Pollinations paid image requests continue to require the existing confirmations.
+
+## v0.9.10: Open the map *inside the chat*
+
+- An independent circular **MAP** button now lives in SillyTavern's chat container (`#sheld`), above the message input area. It is draggable within the chat region.
+- Tap the button in chat to open a resizable map panel **over the current chat**, not a new screen. Tap the **X** on the map bar to fold it away.
+- A second floating button can be used outside chat.
+- The chat button stays available if the body-level launcher is hidden behind a host layout.
+- `MAP !` means a loading error; tap for details.
+- No paid calls, no additional roleplay prompt tokens.
+
+If the chat button is still absent, confirm SillyTavern has loaded `manifest.json` v0.9.10 and is serving the new `bootstrap.js` (delete an older installation and restart if necessary).
