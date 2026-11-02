@@ -272,3 +272,7 @@
  #neon-map-v3 #nm-panel .nm-head-right button{min-width:27px;padding:4px}
  #neon-map-v3 #nm-panel #nm-resize-corner{width:27px;height:27px}
 }
+
+/* v0.9.9: keep launcher visible above host menus; only hide when panel opens. */
+#neon-map-v3 #nm-launch:not([hidden]){z-index:2147483000!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+#neon-map-v3 #nm-panel:not([hidden]){z-index:2147483001!important;visibility:visible!important;pointer-events:auto!important}
