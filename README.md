@@ -1,4 +1,4 @@
-# NEON MAP v0.9.8 (Private)
+# NEON MAP v0.9.9 (Private)
 
 A third-party UI extension for **SillyTavern**, prepared from the NEON MAP v0.9.7 standalone prototype for personal use.
 
@@ -41,7 +41,7 @@ Read **[INSTALL_PRIVATE_TH.md](INSTALL_PRIVATE_TH.md)**. In short:
 
 This repository intentionally does not include the Standalone Demo or any fabricated demo conversations.
 
-## v0.9.8 Floating Bottom Map UI
+## v0.9.9 Floating Bottom Map UI
 
 - Draggable circular MAP bubble with UI-only saved coordinates.
 - Bubble click opens a resizable, bottom-docked window over SillyTavern. No full-screen takeover.
@@ -49,3 +49,10 @@ This repository intentionally does not include the Standalone Demo or any fabric
 - X restores the bubble; mobile Info toggle switches map and sidebar; map zoom continues to work.
 - Auto-open is optional and defaults OFF even for older installs.
 - Does not add prompt tokens or paid image operations. Private repo installation requires Git authentication.
+
+## Missing MAP button troubleshooting (v0.9.9)
+
+- `bootstrap.js` is the new entry point and creates a MAP bubble before loading the main map engine.
+- If map initialization fails, the fallback button changes to `MAP !`; tap it to see an error message.
+- If neither `MAP` nor `MAP !` appears, SillyTavern has not loaded this extension. Check Manage Extensions, enable it, refresh browser cache and restart the server.
+- Verify `manifest.json` is v0.9.9 with `js: bootstrap.js`.
