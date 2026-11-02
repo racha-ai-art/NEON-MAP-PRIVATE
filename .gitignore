@@ -1,0 +1,15 @@
+# Do not commit local config, personal chats or tokens
+.env
+.env.*
+*.pem
+*.key
+*_token.txt
+*secret*
+*.log
+.DS_Store
+Thumbs.db
+node_modules/
+*.zip
+backup/
+chat_export/
+user_data/
