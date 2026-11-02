@@ -1,0 +1,12 @@
+{
+  "display_name": "NEON MAP (Private)",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "dependencies": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "NEON MAP Personal Build",
+  "version": "0.9.7",
+  "auto_update": false
+}
