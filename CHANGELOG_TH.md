@@ -22,3 +22,11 @@
 - ไม่มีข้อมูลแชทตัวอย่างหรือคีย์ API ถูกเพิ่มในชุดอัปโหลด
 
 โปรดทดสอบกับ SillyTavern จริงก่อนใช้งานกับแชทสำคัญ
+
+## 0.9.8 - Floating dock and resizable bottom map
+
+- Turned MAP launcher into a draggable round bubble; position stored locally.
+- Opening shows a bottom overlay; X collapses to bubble.
+- Height adjustable by +, -, header handle; width and height via top-left corner.
+- Mobile layout prioritizes map; Info toggles notes/settings.
+- Auto-open disabled by default (optional setting); no model tokens or image credits added.
