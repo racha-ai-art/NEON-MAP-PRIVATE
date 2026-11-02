@@ -1,8 +1,8 @@
-# NEON MAP v0.9.7 (Private)
+# NEON MAP v0.9.8 (Private)
 
 A third-party UI extension for **SillyTavern**, prepared from the NEON MAP v0.9.7 standalone prototype for personal use.
 
-**Version:** 0.9.7  
+**Version:** 0.9.8  
 **Installation status:** Repository structure and browser mock tests verified; **not yet verified against a live SillyTavern server**.  
 **Repo visibility recommendation:** **Private**.
 
@@ -40,3 +40,12 @@ Read **[INSTALL_PRIVATE_TH.md](INSTALL_PRIVATE_TH.md)**. In short:
 - **Do not add credentials, personal chats, or access tokens to GitHub**. A Private repository still requires good credential hygiene.
 
 This repository intentionally does not include the Standalone Demo or any fabricated demo conversations.
+
+## v0.9.8 Floating Bottom Map UI
+
+- Draggable circular MAP bubble with UI-only saved coordinates.
+- Bubble click opens a resizable, bottom-docked window over SillyTavern. No full-screen takeover.
+- Window top grab strip / top-left corner for resizing; header +/- controls for height.
+- X restores the bubble; mobile Info toggle switches map and sidebar; map zoom continues to work.
+- Auto-open is optional and defaults OFF even for older installs.
+- Does not add prompt tokens or paid image operations. Private repo installation requires Git authentication.
