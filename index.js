@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.8 — SillyTavern third-party extension (private build).
+/* NEON MAP v0.9.9 — SillyTavern third-party extension (private build).
  * Do not re-inject the Standalone Demo fixture into production.
  * Local atlas / Local Pixel Art do not call paid APIs.
  */
@@ -1742,7 +1742,7 @@ function inspectArea(atlas,{level,point,focus,radius=180}={},chat=[]){
 return {REVEALED_ONLY_RULE,publicStoryLines,placeRevealed,inspectArea};
 })();
 __nmModules['place-cards.js']=(()=>{
-// NEON MAP v0.9.8: local-only place bookmarks with safe legacy-ref recovery.
+// NEON MAP v0.9.9: local-only place bookmarks with safe legacy-ref recovery.
 // This state never changes character positions, story text, image generation or LLM prompts.
 const {viewData}=__nmModules['atlas.js'];
 const str=(value,size=120)=>String(value??'').trim().slice(0,size);
@@ -2211,7 +2211,7 @@ async function generateAndCacheView(atlas, level, {signal, onStatus, approvedPai
 return {IMAGE_DEFAULTS,ensureImageSettings,getCachedRender,saveRender,clearRender,clearAllRenders,currentViewDescriptor,buildPrompt,cancelHordeJob,generateAndCacheView};
 })();
 __nmModules['index.js']=(()=>{
-// NEON MAP v0.9.8: stable local atlas + optional user-triggered image generation.
+// NEON MAP v0.9.9: stable local atlas + optional user-triggered image generation.
 // Never inject prompts into chat generation. Optional AI image calls are direct provider requests, separate from roleplay.
 const {t}=__nmModules['labels.js'];
 const {backgroundSvg}=__nmModules['backgrounds.js'];
@@ -3399,7 +3399,10 @@ async function refreshLore(){
 }
 function scheduleLoreRefresh(){if(loreTimer)clearTimeout(loreTimer);loreTimer=setTimeout(()=>{loreTimer=null;void refreshLore();},600);}
 function scheduleTurnUpdate(forceReplay=false){pendingReplay=pendingReplay||forceReplay;if(chatTimer)clearTimeout(chatTimer);chatTimer=setTimeout(()=>{chatTimer=null;void updateFromTurn();},forceReplay?100:35);}
-async function init(){if(ready)return;ready=true;renderShell();
+async function init(){if(ready)return;ready=true;
+ try{renderShell();globalThis.__NEON_MAP_READY=true;globalThis.__NEON_MAP_ERROR='';}
+ catch(error){globalThis.__NEON_MAP_READY=false;globalThis.__NEON_MAP_ERROR=error?.message||String(error);console.error('[NEON MAP] Floating window initialization failed',error);return;}
+
  const ctx=st();if(ctx?.eventSource && ctx?.event_types){
   ctx.eventSource.on(ctx.event_types.CHAT_CHANGED,()=>{if(loreTimer)clearTimeout(loreTimer);if(chatTimer)clearTimeout(chatTimer);void loadChat().then(refreshBookChoices);});
   // Normal replies use the constant-time incremental cursor, not a full hash
@@ -3419,7 +3422,9 @@ async function init(){if(ready)return;ready=true;renderShell();
   }
  }
  document.addEventListener('visibilitychange',()=>saver.onVisibilityHidden());
- await loadChat();await refreshBookChoices();console.log('[NEON MAP v0.9.8] Atlas loaded. Chat generation stays local-only; AI image calls are optional and separate.');
+ try{await loadChat();await refreshBookChoices();}
+ catch(error){console.warn('[NEON MAP] Chat/Lorebook data did not load yet. The floating button remains available.',error);trace('เปิดแผนที่ได้ แต่ยังโหลดข้อมูลแชทไม่สำเร็จ: '+String(error?.message||error).slice(0,80),true);}
+ console.log('[NEON MAP v0.9.9] Floating UI initialized; chat features are local.');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void init(),{once:true});else void init();
 
