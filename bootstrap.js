@@ -1,5 +1,5 @@
-/* NEON MAP v0.9.17: one floating launcher, one map visibility controller. */
-const NM_VERSION = '0.9.17';
+/* NEON MAP v0.10.0: one floating launcher, one map visibility controller. */
+const NM_VERSION = '0.10.0';
 
 function startNeonMap() {
     // The host may evaluate an extension twice. Never install duplicate listeners.
@@ -76,7 +76,7 @@ function startNeonMap() {
         if (pendingOpen) openMap();
     }
     document.addEventListener('neon-map:ready', engineReady, {once: true});
-    import('./index.js?v=' + NM_VERSION).then(() => {
+    import('./gm-ui.js?v=' + NM_VERSION).then(() => {
         if (globalThis.__NEON_MAP_READY) engineReady();
         else if (globalThis.__NEON_MAP_ERROR) throw new Error(globalThis.__NEON_MAP_ERROR);
     }).catch(error => {

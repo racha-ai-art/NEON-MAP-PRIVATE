@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const code=fs.readFileSync(require('node:path').join(__dirname,'../index.js'),'utf8');
 const sandbox={console,Blob,URL,setTimeout,clearTimeout};
 vm.createContext(sandbox);
-vm.runInContext(code.slice(0,code.indexOf("__nmModules['index.js']="))+'\nglobalThis.modules=__nmModules;',sandbox);
+vm.runInContext(code.slice(0,code.indexOf("export const modules"))+'\nglobalThis.modules=__nmModules;',sandbox);
 const m=sandbox.modules;
 const atlas=m['atlas.js'];
 const json=value=>JSON.parse(JSON.stringify(value));

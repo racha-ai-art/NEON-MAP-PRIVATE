@@ -1,12 +1,14 @@
 {
   "name": "neon-map-extension",
-  "version": "0.9.17",
+  "version": "0.10.0",
   "private": true,
   "scripts": {
-    "test": "node --test tests/core.test.cjs",
-    "test:browser": "node tests/browser.cjs"
+    "test": "node --test tests/core.test.cjs tests/gm-model.test.mjs",
+    "test:browser": "node tests/browser.cjs",
+    "test:live": "node tests/live-sillytavern.cjs"
   },
   "devDependencies": {
     "playwright": "^1.58.2"
-  }
+  },
+  "type": "module"
 }

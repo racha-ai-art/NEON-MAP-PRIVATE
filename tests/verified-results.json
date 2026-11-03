@@ -1,0 +1,60 @@
+{
+  "version": "0.10.0",
+  "date": "2026-11-03",
+  "node": {
+    "passed": 27
+  },
+  "browser_fixture": {
+    "passed": 23,
+    "results": [
+      "desktop: opens an interactive GM map without story tag requirements",
+      "desktop: can create a place, floor and room using UI controls",
+      "desktop: places USER and CHAR, with a visible USER beacon",
+      "desktop: room sharing is opt-in and excludes GM private notes",
+      "desktop: GM notes can be placed, selected and moved without adding prompt text",
+      "desktop: moving a room token uses walkable grid paths",
+      "desktop: refresh keeps GM rooms, placements and pins",
+      "desktop: same-tab recovery retains edits when the host has no persisted copy",
+      "desktop: X folds to one bubble and reopens repeatedly",
+      "desktop: chat switch cancels old loads and clears room perception",
+      "desktop: free workflow sends no external image requests",
+      "mobile: opens an interactive GM map without story tag requirements",
+      "mobile: can create a place, floor and room using UI controls",
+      "mobile: places USER and CHAR, with a visible USER beacon",
+      "mobile: room sharing is opt-in and excludes GM private notes",
+      "mobile: GM notes can be placed, selected and moved without adding prompt text",
+      "mobile: moving a room token uses walkable grid paths",
+      "mobile: refresh keeps GM rooms, placements and pins",
+      "mobile: same-tab recovery retains edits when the host has no persisted copy",
+      "mobile: X folds to one bubble and reopens repeatedly",
+      "mobile: chat switch cancels old loads and clears room perception",
+      "mobile: free workflow sends no external image requests",
+      "no uncaught extension errors"
+    ]
+  },
+  "live_sillytavern": {
+    "sillytavern": "1.19.0",
+    "browser": "153.0.8010.0",
+    "passed": 14,
+    "results": [
+      "desktop: live host loads extension, bound Lorebook and clickable map",
+      "desktop: create place, floor and room through actual ST UI",
+      "desktop: set both actors and show USER beacon",
+      "desktop: optional room awareness reaches the real prompt API, private notes stay out",
+      "desktop: GM state actually survives server save and a page reload",
+      "desktop: X folds, chat input remains usable and MAP reopens",
+      "mobile: live host loads extension, bound Lorebook and clickable map",
+      "mobile: create place, floor and room through actual ST UI",
+      "mobile: set both actors and show USER beacon",
+      "mobile: optional room awareness reaches the real prompt API, private notes stay out",
+      "mobile: GM state actually survives server save and a page reload",
+      "mobile: X folds, chat input remains usable and MAP reopens",
+      "mobile: narrow portrait and landscape retain access to X and map tools",
+      "no unhandled errors originating in NEON MAP on the live host"
+    ],
+    "unrelatedHostErrors": [
+      "Unexpected token 'I', \"Internal S\"... is not valid JSON"
+    ]
+  },
+  "total": 64
+}
