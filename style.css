@@ -1,10 +1,9 @@
-/* NEON MAP v0.8: private floating atlas panel with optional AI image layer. */
+/* NEON MAP v0.9.17: scoped atlas panel and a single floating launcher. */
 #neon-map-v3{font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:#e6f0f4;--bg:#101c2c;--card:#16283c;--line:#35536c;--mint:#53e1c1;}
 #neon-map-v3 *{box-sizing:border-box}
 #neon-map-v3 button,#neon-map-v3 input,#neon-map-v3 select{font:inherit}
 #neon-map-v3 button{cursor:pointer}
-#nm-launch{position:fixed;right:16px;bottom:82px;z-index:10500;background:linear-gradient(135deg,#113d49,#286d6d);border:1px solid #69c8b8;color:#fff;padding:12px 15px;border-radius:15px;font-weight:950;letter-spacing:2px;box-shadow:0 6px 24px #06101899}
-#nm-panel{position:fixed;top:8vh;right:3vw;z-index:10501;width:min(1120px,94vw);height:min(820px,83vh);display:flex;flex-direction:column;background:#0c1929;color:#e8f1f7;border:1px solid #3b6172;border-radius:16px;box-shadow:0 18px 90px #010817cb;overflow:hidden}
+#nm-panel{display:flex;flex-direction:column;background:#0c1929;color:#e8f1f7;overflow:hidden}
 #nm-panel[hidden]{display:none!important}
 #nm-panel .nm-head{background:#0e2032;display:flex;align-items:center;justify-content:space-between;padding:9px 14px;gap:10px;min-height:55px;border-bottom:1px solid var(--line)}
 #nm-panel .nm-brand{display:flex;align-items:center;gap:12px;color:#60eac7;font-size:19px;font-weight:950;letter-spacing:.5px}
@@ -82,8 +81,6 @@
 #nm-panel #nm-source-list{display:block;margin-top:7px;font-size:10px;color:#9caab8;overflow-wrap:anywhere}
 #nm-panel footer{font-size:10px;color:#96aebe;border-top:1px solid #35506b;text-align:center;padding:5px;background:#10283b}
 @media(max-width:800px){
- #nm-panel{top:0;right:0;width:100vw;height:100dvh;border-radius:0;border:0}
- #nm-launch{bottom:71px;right:10px;padding:9px 10px}
  #nm-panel .nm-head{min-height:46px;padding:5px 10px}
  #nm-panel .nm-brand{font-size:16px}
  #nm-panel .nm-summary{font-size:9px;padding:5px 9px}
@@ -91,7 +88,6 @@
  #nm-panel #nm-levels{padding:6px 6px 5px;gap:3px}
  #nm-panel #nm-levels button{font-size:10px;padding:8px 0}
  #nm-panel .nm-topline{padding:4px 7px}
- #nm-panel .nm-body{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(285px,1.46fr) minmax(250px,1fr);gap:6px;padding:6px}
  #nm-panel .nm-stage b{font-size:13px}
  #nm-panel .nm-aside{overflow-y:auto}
  #nm-panel .nm-card{padding:8px}
@@ -100,7 +96,6 @@
  #nm-panel .nm-stage small{max-width:220px;font-size:9px}
  #nm-panel footer{display:none}
 }
-@media(max-height:640px) and (max-width:800px){#nm-panel .nm-body{grid-template-rows:minmax(225px,1.2fr) minmax(180px,1fr)}}
 /* v0.4 explored-region fog mask; actual unvisited portions are obscured. */
 #nm-fog-layer{z-index:4;pointer-events:none;isolation:isolate}
 #nm-viewport.nm-foggy:after{content:none}
@@ -208,7 +203,7 @@
 #neon-map-v3 #nm-paid-warning { display:block; color:#ff9a9a; font-weight:700; margin:.35rem 0; }
 
 
-/* v0.9.8 - Floating draggable bubble and non-modal resizable bottom map sheet. */
+/* Floating window dimensions are controlled by panelDimensions(), including mobile keyboards. */
 #neon-map-v3 #nm-launch{
  position:fixed;left:auto;top:auto;right:16px;bottom:94px;
  z-index:10520;width:60px;height:60px;min-width:60px;min-height:60px;
@@ -227,7 +222,7 @@
  position:fixed;top:auto;left:auto;right:12px;bottom:12px;
  z-index:10521;width:min(920px,calc(100vw - 24px));height:66dvh;
  max-width:calc(100vw - 12px);max-height:calc(100dvh - 14px);
- min-height:250px;border-radius:18px;border:1px solid #4c8e99;
+ min-height:0;border-radius:18px;border:1px solid #4c8e99;
  box-shadow:0 15px 52px #020a19c7;overflow:hidden;
 }
 #neon-map-v3 #nm-panel[hidden]{display:none!important}
@@ -251,7 +246,7 @@
 #neon-map-v3 #nm-panel #nm-details-toggle{display:none}
 #neon-map-v3 #nm-panel .nm-body{overflow:hidden}
 @media(max-width:800px){
- #neon-map-v3 #nm-panel{top:auto;right:5px;bottom:5px;left:auto;width:calc(100vw - 10px);height:68dvh;border-radius:15px;border:1px solid #42788c}
+ #neon-map-v3 #nm-panel{border-radius:15px;border:1px solid #42788c}
  #neon-map-v3 #nm-panel .nm-brand{font-size:14px;gap:7px}
  #neon-map-v3 #nm-panel .nm-head{padding:5px 7px 5px 9px;min-height:45px}
  #neon-map-v3 #nm-panel .nm-noai{display:none}
@@ -273,11 +268,7 @@
  #neon-map-v3 #nm-panel #nm-resize-corner{width:27px;height:27px}
 }
 
-/* v0.9.9: keep launcher visible above SillyTavern menus; never hide unless panel is opened. */
-#neon-map-v3 #nm-launch:not([hidden]){z-index:2147483000!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
-#neon-map-v3 #nm-panel:not([hidden]){z-index:2147483001!important;visibility:visible!important;pointer-events:auto!important}
-
-/* v0.9.10: top-level click-through overlay. The host chat may be a separate stacking context. */
+/* Click-through overlay: only the visible MAP button or panel receives input. */
 html body > #neon-map-v3{
  position:fixed!important;inset:0!important;left:0!important;top:0!important;
  width:100vw!important;height:100dvh!important;max-height:none!important;
@@ -286,27 +277,21 @@ html body > #neon-map-v3{
  isolation:isolate!important;transform:none!important;
 }
 html body > #neon-map-v3 #nm-launch:not([hidden]){
- position:fixed!important;z-index:2147483000!important;
+ display:flex!important;position:fixed!important;z-index:2147483000!important;
  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
 }
 html body > #neon-map-v3 #nm-panel:not([hidden]){
  position:fixed!important;z-index:2147483001!important;
  visibility:visible!important;opacity:1!important;pointer-events:auto!important;
 }
-/* This round chat launcher lives inside #sheld, outside the overlay, to survive
-   SillyTavern themes that cover the rest of the page while a chat is open. */
-#sheld > #neon-map-chat-toggle{z-index:2147483100!important;pointer-events:auto!important;}
-
-/* The active in-chat MAP button replaces the body floating button, rather than overlapping it. */
-html body > #neon-map-v3.nm-chat-button-ready #nm-launch:not([hidden]){display:none!important;}
-/* v0.9.11: explicit visibility and responsive in-chat map panel. */
+/* Hidden is the sole source of visibility state. No competing inline display repairs. */
 html body > #neon-map-v3 #nm-panel:not([hidden]){display:flex!important;flex-direction:column!important;max-width:calc(100vw - 10px)!important;max-height:calc(100dvh - 14px)!important;overflow:hidden!important;}
-html body > #neon-map-v3 #nm-panel[hidden]{display:none!important;}
+html body > #neon-map-v3 [hidden]{display:none!important;}
 html body > #neon-map-v3 #nm-panel:not([hidden]) .nm-body{flex:1 1 auto!important;min-height:0!important;}
-@media(max-width:800px){html body > #neon-map-v3 #nm-panel:not([hidden]){left:auto!important;top:auto!important;right:5px!important;bottom:5px!important;width:calc(100vw - 10px)!important;height:min(68dvh,calc(100dvh - 14px))!important;}}
-
-/* v0.9.13: native SillyTavern lower-left hamburger menu item. */
-#options .options-content > #neon-map-options-entry{display:flex;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;color:inherit;text-decoration:none;min-height:40px;}
-#options .options-content > #neon-map-options-entry:hover{background:var(--SmartThemeQuoteColor,rgba(120,160,170,.2));}
-#options .options-content > #neon-map-options-entry i{min-width:22px;text-align:center;}
-#neon-map-startup-bubble,#neon-map-chat-toggle,#neon-map-v3 #nm-launch{display:none!important;}
+#neon-map-v3 #nm-panel button:focus-visible{outline:2px solid #b7fff0;outline-offset:-2px}
+#neon-map-v3 #nm-panel button:disabled{cursor:default;opacity:.5}
+#neon-map-v3 #nm-panel .nm-head-right button,#neon-map-v3 #nm-panel .nm-summary,#neon-map-v3 #nm-panel #nm-levels,#neon-map-v3 #nm-panel .nm-topline,#neon-map-v3 #nm-panel footer{flex-shrink:0}
+#neon-map-v3 #nm-panel .nm-brand{min-width:0;white-space:nowrap}
+#neon-map-v3 #nm-panel .nm-summary{min-width:0}
+#neon-map-v3 #nm-panel .nm-aside{overscroll-behavior:contain;touch-action:pan-y}
+@media(max-width:340px){#neon-map-v3 #nm-panel .nm-brand>span{font-size:10px}#neon-map-v3 #nm-panel .nm-head{gap:3px}}

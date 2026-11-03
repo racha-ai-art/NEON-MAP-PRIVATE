@@ -1,73 +1,45 @@
-# NEON MAP v0.9.10 (Private)
+# NEON MAP v0.9.17
 
-A third-party UI extension for **SillyTavern**, prepared from the NEON MAP v0.9.7 standalone prototype for personal use.
+ส่วนขยายแผนที่สำหรับ SillyTavern แก้ต่อจาก main commit [64c7202](https://github.com/racha-ai-art/NEON-MAP-PRIVATE/commit/64c72025f17972114c9a7d906e6dc027070515a4) รุ่น 0.9.16
 
-**Version:** 0.9.10  
-**Installation status:** Repository structure and browser mock tests verified; **not yet verified against a live SillyTavern server**.  
-**Repo visibility recommendation:** **Private**.
+## การใช้งาน
 
-## Features
+- เริ่มต้นด้วย **ปุ่มวงกลม MAP เพียงปุ่มเดียว** ลอยอยู่เหนือหน้าแชท ลากย้ายได้ด้วยเมาส์หรือนิ้ว
+- แตะ MAP เพื่อกางหน้าต่างแผนที่ กด **X มุมขวาบนของหน้าต่าง NEON MAP** เพื่อพับกลับเป็นวงกลมเดิม
+- ปรับความสูงด้วยปุ่มย่อ/ขยายหรือแถบจับด้านบน จับมุมซ้ายบนเพื่อปรับทั้งกว้างและสูง
+- บนมือถือ ปุ่ม **Info / Map** สลับระหว่างแผนที่กับเครื่องมือและรายละเอียด
+- แตะหมุดเพื่อเปิดการ์ดสถานที่ ปักหมุด ตั้งเป้าหมาย หรือดูข้อมูลพื้นที่
+- เปิดหน้าต่างได้แม้ยังไม่ได้เลือกแชท โดยแสดงข้อความให้เปิดแชทก่อน
 
-- Local atlas with four zoom levels: world → place/building → floor → room.
-- Place cards, details, pins, a single navigation target, exploration fog, and local tracking based on chat and linked World Info/Lorebook data.
-- Local Pixel Art rendering in the browser, with no image-generation API or credits.
-- Optional third-party image generation. Paid Pollinations mode is **off by default** and requires confirmations before selecting it, linking a wallet, and submitting a paid generation.
-- Per-chat map data stored in SillyTavern chat metadata.
+ตำแหน่งปุ่มและขนาดหน้าต่างเก็บในเบราว์เซอร์ ส่วนข้อมูลแผนที่ หมุด และประวัติแยกตาม Chat Metadata ของ SillyTavern
 
-## Files
+## ติดตั้งหรืออัปเดต
 
-- `manifest.json`: SillyTavern extension manifest.
-- `index.js`: production browser extension script (the demo's fake SillyTavern context was removed).
-- `style.css`: scoped UI styles.
-- `INSTALL_PRIVATE_TH.md`: complete private GitHub upload + personal installation instructions in Thai.
-- `CHANGELOG_TH.md`: change notes.
+อ่าน [INSTALL_PRIVATE_TH.md](INSTALL_PRIVATE_TH.md) แล้วนำไฟล์จาก ZIP ไปทับในโฟลเดอร์ส่วนขยายเดิม โดยให้ manifest.json และ bootstrap.js อยู่ที่รากโฟลเดอร์เดียวกัน จากนั้นรีสตาร์ต SillyTavern และรีโหลดหน้าเว็บ อย่าติดตั้งรุ่นเก่าและใหม่พร้อมกัน
 
-## Install
+**ไม่ต้องรัน npm install เพื่อใช้งานส่วนขยาย** ไฟล์ package.json และ tests มีไว้สำหรับตรวจโค้ดเท่านั้น
 
-Read **[INSTALL_PRIVATE_TH.md](INSTALL_PRIVATE_TH.md)**. In short:
+## ภาพประกอบ
 
-1. Create a **Private** GitHub repository.
-2. Upload these **extracted files**, so `manifest.json` is at the repository root. Do **not** upload just the zip file.
-3. For a private repository, prefer cloning it while signed in using GitHub Desktop (or Git with configured credentials), then copying the resulting repository folder into your SillyTavern user extension directory.
-4. Restart SillyTavern and open a character chat; use the floating **MAP** button.
+ค่าเริ่มต้นปิดบริการภาพ การเปิด MAP และวาดแผนที่ local ไม่เรียกโมเดลหรือบริการภาพภายนอก
 
-## Safety and limitations
+- **Local Pixel Art:** วาดในเบราว์เซอร์ ไม่ใช้เครดิต เลือก provider เปิดเลเยอร์ แล้วกดเรนเดอร์ หากต้องการให้สร้างอัตโนมัติ ให้เปิดตัวเลือก Auto
+- **AI Horde / Pollinations:** เป็นตัวเลือกแยกจากแผนที่ local
+- **Pollinations:** ยังคงต้องยืนยันการเชื่อมกระเป๋าและยืนยันก่อนส่งคำขอภาพแบบเสียเงินแต่ละครั้ง ไม่มีการสร้างภาพแบบเสียเงินอัตโนมัติ
+- คีย์ส่วนตัวอยู่ในหน่วยความจำของแท็บ ไม่บันทึกลงแผนที่หรือไฟล์ส่งออก
 
-- Opening the local map and drawing Local Pixel Art does not issue a paid API request or add extra roleplay-model tokens. The local renderer consumes browser CPU/memory, and the chat may already contain its own state tokens from other roleplay components.
-- The location geometry is schematic unless confirmed by lore/scene data. The extension should not be treated as an authoritative map of a fictional world.
-- When **AI Horde / Pollinations** is intentionally enabled, image prompts may be sent to external providers. Pollinations may cost real credits after confirmation. AI Horde availability and provider terms can change.
-- The extension has only been checked through static code validation and browser mock tests. Test on your installed version of SillyTavern and back up important chats before use.
-- **Do not add credentials, personal chats, or access tokens to GitHub**. A Private repository still requires good credential hygiene.
+แผนผังเป็นภาพประมาณการจากข้อมูลที่อ่านได้ ไม่ใช่พิกัดจริงของโลกในเนื้อเรื่อง
 
-This repository intentionally does not include the Standalone Demo or any fabricated demo conversations.
+## การตรวจสอบ
 
-## v0.9.10 Floating Bottom Map UI
+ผ่านชุดทดสอบตรรกะ 13 กรณี และเบราว์เซอร์ 24 กรณี รวมการเปิดปิดซ้ำ การลากด้วย touch การย่อขยาย การสลับแชทระหว่างโหลด และการใช้งานเมื่อแคชภาพใช้ไม่ได้
 
-- Draggable circular MAP bubble with UI-only saved coordinates.
-- Bubble click opens a resizable, bottom-docked window over SillyTavern. No full-screen takeover.
-- Window top grab strip / top-left corner for resizing; header +/- controls for height.
-- X restores the bubble; mobile Info toggle switches map and sidebar; map zoom continues to work.
-- Auto-open is optional and defaults OFF even for older installs.
-- Does not add prompt tokens or paid image operations. Private repo installation requires Git authentication.
+ทดสอบด้วย Chromium ในบริบท SillyTavern จำลอง ยังไม่ได้ทดสอบบนเซิร์ฟเวอร์และธีมจริงของผู้ใช้ ดูรายละเอียดใน [TEST_REPORT_TH.md](TEST_REPORT_TH.md)
 
-## Troubleshooting a missing floating button (v0.9.10)
+สำหรับผู้พัฒนา:
 
-- `bootstrap.js` is the new entry point. It places a visible circular MAP fallback button **before** loading the main map engine.
-- When the main engine starts, the fallback button disappears and the normal draggable MAP button takes over.
-- If the main engine fails, the fallback changes to **MAP !** and can be clicked to view the error.
-- If **neither MAP nor MAP ! appears**, SillyTavern is not executing this installed extension, or the client has cached an older version. Check Extensions > Manage Extensions, update/reinstall the extension and fully reload.
-- To verify the exact version, check `manifest.json` (0.9.10, `js`: `bootstrap.js`).
-- Reload SillyTavern after updating. A browser hard refresh may be needed if assets are cached.
+- npm test — ทดสอบแกนข้อมูล ไม่ต้องใช้แพ็กเกจเพิ่ม
+- npm install แล้ว npx playwright install chromium และ npm run test:browser — ทดสอบ UI ในเบราว์เซอร์
+- ตั้ง TEST_CHROMIUM_EXECUTABLE หากต้องการใช้ Chromium ที่ติดตั้งไว้แล้ว
 
-The local map does not use image credits and does not inject roleplay-model prompts. Pollinations paid image requests continue to require the existing confirmations.
-
-## v0.9.10: Open the map *inside the chat*
-
-- An independent circular **MAP** button now lives in SillyTavern's chat container (`#sheld`), above the message input area. It is draggable within the chat region.
-- Tap the button in chat to open a resizable map panel **over the current chat**, not a new screen. Tap the **X** on the map bar to fold it away.
-- A second floating button can be used outside chat.
-- The chat button stays available if the body-level launcher is hidden behind a host layout.
-- `MAP !` means a loading error; tap for details.
-- No paid calls, no additional roleplay prompt tokens.
-
-If the chat button is still absent, confirm SillyTavern has loaded `manifest.json` v0.9.10 and is serving the new `bootstrap.js` (delete an older installation and restart if necessary).
+ไฟล์แชทจำลองอยู่เฉพาะในชุดทดสอบ และไม่ถูกโหลดโดย manifest หรือโค้ดใช้งานจริง

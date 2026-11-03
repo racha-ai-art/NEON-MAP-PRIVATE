@@ -1,117 +1,93 @@
-/* NEON MAP v0.9.16: SillyTavern lower-left hamburger/options menu integration.
- * No floating launcher. Menu action opens/closes the existing map panel. */
-const NM_MENU_ID='neon-map-options-entry';
-let nmError='',nmStarted=false;
-function nmPanel(){return document.getElementById('nm-panel');}
-function nmReady(){return typeof globalThis.__NEON_MAP_TOGGLE==='function'&&globalThis.__NEON_MAP_READY===true;}
-function nmRepair(open){
- const root=document.getElementById('neon-map-v3'),panel=nmPanel();
- if(!root||!panel)return false;
- if(root.parentElement!==document.body)document.body.append(root);
- root.style.setProperty('position','fixed','important');
- root.style.setProperty('inset','0','important');
- root.style.setProperty('width','100vw','important');
- root.style.setProperty('height','100dvh','important');
- root.style.setProperty('z-index','2147482000','important');
- root.style.setProperty('pointer-events','none','important');
- root.style.setProperty('visibility','visible','important');
- root.style.setProperty('display','block','important');
- panel.hidden=!open;
- if(open){
-  panel.style.setProperty('display','flex','important');
-  panel.style.setProperty('flex-direction','column','important');
-  panel.style.setProperty('position','fixed','important');
-  panel.style.setProperty('visibility','visible','important');
-  panel.style.setProperty('opacity','1','important');
-  panel.style.setProperty('pointer-events','auto','important');
-  panel.style.setProperty('z-index','2147483001','important');
-  panel.style.setProperty('top','auto','important');
-  panel.style.setProperty('left','auto','important');
-  panel.style.setProperty('right',innerWidth<=800?'5px':'12px','important');
-  panel.style.setProperty('bottom',innerWidth<=800?'5px':'12px','important');
-  panel.style.setProperty('width',Math.max(240,Math.min(innerWidth-10,innerWidth<=800?innerWidth-10:920))+'px','important');
-  panel.style.setProperty('height',Math.max(220,Math.min(innerHeight-14,Math.round(innerHeight*.68)))+'px','important');
- }else{
-  panel.style.removeProperty('display');
- }
- return true;
+/* NEON MAP v0.9.17: one floating launcher, one map visibility controller. */
+const NM_VERSION = '0.9.17';
+
+function startNeonMap() {
+    // The host may evaluate an extension twice. Never install duplicate listeners.
+    if (globalThis.__NEON_MAP_BOOTSTRAPPED) return;
+    globalThis.__NEON_MAP_BOOTSTRAPPED = true;
+    let pendingOpen = false;
+    let loadError = '';
+
+    // Refresh both assets together; previously cached CSS may still hide MAP.
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = new URL('./style.css?v=' + NM_VERSION, import.meta.url).href;
+    css.id = 'neon-map-styles';
+    document.head.append(css);
+    for (const id of ['neon-map-startup-bubble', 'neon-map-chat-toggle', 'neon-map-options-entry']) {
+        document.getElementById(id)?.remove();
+    }
+
+    const root = document.getElementById('neon-map-v3') || document.createElement('div');
+    root.id = 'neon-map-v3';
+    if (root.parentElement !== document.body) document.body.append(root);
+    const launch = document.getElementById('nm-launch') || document.createElement('button');
+    launch.id = 'nm-launch';
+    launch.type = 'button';
+    launch.title = 'เปิด NEON MAP · ลากเพื่อย้ายปุ่ม';
+    launch.setAttribute('aria-label', 'เปิดแผนที่ NEON MAP');
+    launch.setAttribute('aria-controls', 'nm-panel');
+    launch.setAttribute('aria-expanded', 'false');
+    launch.innerHTML = '<span class="nm-bubble-icon" aria-hidden="true">◈</span><span class="nm-bubble-label">MAP</span>';
+    if (launch.parentElement !== root) root.prepend(launch);
+
+    function openMap() {
+        if (globalThis.__NEON_MAP_READY && typeof globalThis.__NEON_MAP_SET_OPEN === 'function') {
+            pendingOpen = false;
+            globalThis.__NEON_MAP_SET_OPEN(true);
+            return;
+        }
+        if (loadError || globalThis.__NEON_MAP_ERROR) {
+            alert('NEON MAP โหลดไม่สำเร็จ: ' + (loadError || globalThis.__NEON_MAP_ERROR) + '\nกรุณารีโหลดหน้า SillyTavern หลังอัปเดตส่วนขยาย');
+            return;
+        }
+        pendingOpen = true;
+        launch.setAttribute('aria-busy', 'true');
+        launch.title = 'กำลังโหลด NEON MAP…';
+    }
+    launch.addEventListener('click', openMap);
+
+    function mountSettings() {
+        const host = document.getElementById('extensions_settings');
+        if (!host || document.getElementById('neon-map-settings-entry')) return;
+        const box = document.createElement('div');
+        box.id = 'neon-map-settings-entry';
+        box.className = 'extension_container';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'menu_button';
+        button.textContent = 'Open NEON MAP · ' + NM_VERSION;
+        button.addEventListener('click', openMap);
+        box.append(button);
+        host.prepend(box);
+    }
+    mountSettings();
+    // Watch direct host replacements, rather than every pin and streaming chat token.
+    const observer = new MutationObserver(() => {
+        if (root.parentElement !== document.body) document.body.append(root);
+        mountSettings();
+    });
+    observer.observe(document.body, {childList: true});
+
+    function engineReady() {
+        launch.removeAttribute('aria-busy');
+        launch.title = 'เปิด NEON MAP · ลากเพื่อย้ายปุ่ม';
+        mountSettings();
+        if (pendingOpen) openMap();
+    }
+    document.addEventListener('neon-map:ready', engineReady, {once: true});
+    import('./index.js?v=' + NM_VERSION).then(() => {
+        if (globalThis.__NEON_MAP_READY) engineReady();
+        else if (globalThis.__NEON_MAP_ERROR) throw new Error(globalThis.__NEON_MAP_ERROR);
+    }).catch(error => {
+        loadError = String(error?.message || error);
+        globalThis.__NEON_MAP_ERROR = loadError;
+        launch.removeAttribute('aria-busy');
+        launch.querySelector('.nm-bubble-label').textContent = 'MAP !';
+        launch.title = 'แตะเพื่อดูข้อผิดพลาดของ NEON MAP';
+        console.error('[NEON MAP] Load failed', error);
+    });
 }
-function nmHideLaunchers(){
- for(const id of ['neon-map-startup-bubble','neon-map-chat-toggle','nm-launch']){
-  const b=document.getElementById(id);if(b){b.remove();}
- }
-}
-function nmOpenFromMenu(e){
- e?.preventDefault();e?.stopPropagation();
- if(!nmReady()){
-  alert('NEON MAP ยังไม่พร้อมใช้งาน: '+(nmError||globalThis.__NEON_MAP_ERROR||'ตรวจสอบ Console และรีโหลด SillyTavern'));
-  return;
- }
- try{
-  const next=!!nmPanel()?.hidden;
-  globalThis.__NEON_MAP_TOGGLE();
-  nmRepair(next);nmHideLaunchers();
-  requestAnimationFrame(()=>{nmRepair(next);nmHideLaunchers();});
-  // Close SillyTavern's options dropdown without leaving the chat.
-  if(next){
-   const options=document.getElementById('options');
-   if(options)options.style.display='none';
-  }
- }catch(err){nmError=String(err?.message||err);console.error('[NEON MAP] Menu open failed',err);alert('NEON MAP: '+nmError);}
-}
-function nmFindMenu(){
- // #options is the native dropdown opened by #options_button at lower left.
- for(const sel of ['#options > .options-content','#options .options-content','#options']){
-  const el=document.querySelector(sel);
-  if(el&&el.id!=='options_button')return el;
- }
- return null;
-}
-function nmMountMenu(){
- nmHideLaunchers();
- const host=nmFindMenu();
- if(!host)return;
- let item=document.getElementById(NM_MENU_ID);
- if(item?.parentElement!==host){item?.remove();item=null;}
- if(!item){
-  item=document.createElement('a');
-  item.id=NM_MENU_ID;
-  item.className='neon-map-native-option';
-  item.setAttribute('role','button');
-  item.setAttribute('tabindex','0');
-  item.setAttribute('title','เปิดแผนที่ NEON MAP โดยไม่ออกจากแชท');
-  const icon=document.createElement('i');icon.className='fa-lg fa-solid fa-map-location-dot';
-  icon.setAttribute('aria-hidden','true');
-  const label=document.createElement('span');label.textContent='NEON MAP';
-  item.append(icon,label);
-  item.addEventListener('click',nmOpenFromMenu);
-  item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();nmOpenFromMenu(e);}});
-  host.prepend(item);
- }
- // Always keep NEON MAP above the native items, including on mobile.
- if(host.firstElementChild!==item)host.prepend(item);
-}
-function nmMountSettings(){
- const host=document.getElementById('extensions_settings');
- if(!host)return;
- let box=document.getElementById('neon-map-settings-entry');
- if(box)return;
- box=document.createElement('div');box.id='neon-map-settings-entry';box.className='extension_container';
- const title=document.createElement('div');title.textContent='NEON MAP';title.style.cssText='font-weight:bold;margin:8px 0';
- const button=document.createElement('button');button.type='button';button.className='menu_button';button.textContent='Open NEON MAP';button.addEventListener('click',nmOpenFromMenu);
- box.append(title,button);host.prepend(box);
-}
-function nmStart(){
- if(nmStarted)return;nmStarted=true;
- globalThis.__NEON_MAP_BOOTSTRAPPED=true;
- nmMountMenu();nmMountSettings();
- document.addEventListener('neon-map:visibility',()=>{nmHideLaunchers();});
- const observer=new MutationObserver(()=>{nmMountMenu();nmMountSettings();nmHideLaunchers();});
- observer.observe(document.body,{childList:true,subtree:true});
- document.getElementById('options_button')?.addEventListener('click',()=>setTimeout(nmMountMenu,0));
- setInterval(()=>{nmMountMenu();nmMountSettings();nmHideLaunchers();},1500);
- // Import asynchronously, so the menu appears even if map engine fails.
- import('./index.js').then(()=>{nmMountMenu();}).catch(err=>{nmError=String(err?.message||err);console.error('[NEON MAP] Load failed',err);});
-}
-if(document.body)nmStart();
-else document.addEventListener('DOMContentLoaded',nmStart,{once:true});
+
+if (document.body) startNeonMap();
+else document.addEventListener('DOMContentLoaded', startNeonMap, {once: true});

@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.15 — SillyTavern third-party extension (private build).
+/* NEON MAP v0.9.17 — SillyTavern third-party extension (private build).
  * Do not re-inject the Standalone Demo fixture into production.
  * Local atlas / Local Pixel Art do not call paid APIs.
  */
@@ -583,14 +583,14 @@ const stripQuotes = text => String(text||'').replace(/[“\u201C][^”\u201D]{0,
 const movementRE = /(?:เดิน\s*จาก|ออกจาก|เดิน\s*ไป(?:ยัง|ที่)?|เดิน\s*เข้า(?:ไป)?(?:ใน|สู่)?|เดิน\s*มาถึง|วิ่ง\s*ไป(?:ยัง|ที่)?|มุ่งหน้า\s*ไป(?:ยัง|ที่)?|ย้าย\s*ไป(?:ยัง|ที่)?|กลับ\s*ไป(?:ยัง|ที่)?|ไป\s*(?:ยัง|ที่)|มา\s*ถึง|เข้า\s*(?:ไป)?(?:ใน|สู่)|arrived\s+at|walked\s+to|went\s+to|moved\s+to|entered)\s*/giu;
 const locationSignal = /(?:อาคาร|ชั้น|ห้อง|โรงเรียน|โรงอาหาร|โรงพยาบาล|ห้องสมุด|หอพัก|สนาม|สวน|สถานี|ตลาด|เมือง|หมู่บ้าน|ป่า|ถนน|ร้าน|ประตู|โรงแรม|ปราสาท|หอคอย|จุด|พื้นที่|เขต|หาด|school|building|floor|room|library|canteen|hospital|station|park|garden|castle|city|town|market|cafe|dormitory|gate|point|area)/iu;
 const endBoundary = /(?:[,\n\r.!?。]|\s+(?:before|after|while|then|and|but)\s+|(?:จากนั้น|ต่อมา|ก่อนจะ|ขณะที่|ระหว่างที่|เพื่อจะ|และเดิน|แล้วเดิน|แล้ววิ่ง|แล้ว(?=[^\n,.!?]{0,35}(?:เดิน|วิ่ง|ไป|เข้า|มาถึง))|แล้วก็|จนกระทั่ง))/giu;
-const notActual = /(?:ไม่|ไม่ได้|ยังไม่|คิดจะ|อยากจะ|อยาก|หวังว่า|คงจะ|อาจจะ|จะ|วางแผน|ถ้า|ห้าม|ตั้งใจ|almost|might|would|wants?\s+to|plans?\s+to|didn't|never)\s*$/iu;
+const notActual = /(?:ไม่|ไม่ได้|ยังไม่|คิดจะ|อยากจะ|อยาก|หวังว่า|คงจะ|อาจจะ|จะ|วางแผน|ถ้า|ห้าม|ตั้งใจ|almost|might|would|wants?\s+to|plans?\s+to|didn't|never|not|will|could|should|may|won't|going\s+to)\s*$/iu;
 function findActor(prefix, names) {
   let best=null;
   for (const person of names) {
     const name=clean(person.name);
     if(!name || name.length<2) continue;
     // Require an explicit speaker/actor in the same local clause, not a bare pronoun.
-    const re = new RegExp(escapeRE(name), 'giu');
+    const re = new RegExp(/^[a-z0-9 ._-]+$/i.test(name)?'(?:^|[^a-z0-9])'+escapeRE(name)+'(?![a-z0-9])':escapeRE(name), 'giu');
     for(const m of prefix.matchAll(re)){
       const end=m.index+m[0].length;
       if(prefix.length-end>72)continue;
@@ -625,7 +625,7 @@ function extractRouteEvents(prose,{userName='',charName='',npcNames=[]}={}) {
       // If a different actor is mentioned after the carried actor, attribution becomes ambiguous.
       const near=prefix.slice(Math.max(0,prefix.length-70));
       if(!person && known.some(p=>!same(p.name,carry.name)&&near.includes(p.name)))continue;
-      if(notActual.test(prefix.slice(-24)))continue;
+      if(notActual.test(person?prefix.slice(person.end):prefix.slice(-24)))continue;
       let target=extractTarget(section.slice(re.lastIndex,re.lastIndex+110));
       // Walk FROM x TO y: treat the destination rather than the source as the move.
       if(/(?:เดิน\s*จาก|ออกจาก)/iu.test(matched[0])){
@@ -835,7 +835,7 @@ return {inferStyleProfile};
 __nmModules['atlas.js']=(()=>{
 // NEON MAP v0.4: local-only, deterministic spatial atlas.
 // Never calls a model and never injects prompts. Locations are schematic.
-const {createMap, kindFromTexts}=__nmModules['engine.js'];
+const {createMap, kindFromTexts, normalizeImported}=__nmModules['engine.js'];
 const {parseNeonState}=__nmModules['scene.js'];
 const {inferStyleProfile}=__nmModules['lore-style.js'];
 const {extractRouteEvents, extractSceneHeaders, findNewNpcNames, extractUserRouteEvents}=__nmModules['tracker.js'];
@@ -864,7 +864,7 @@ const explicitBuildingRE=/(?:\u0e2d\u0e32\u0e04\u0e32\u0e23(?:\u0e40\u0e23\u0e35
 const ROOM_NAMES=['\u0e2b\u0e49\u0e2d\u0e07\u0e2a\u0e21\u0e38\u0e14','\u0e2b\u0e49\u0e2d\u0e07\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25','\u0e2b\u0e49\u0e2d\u0e07\u0e1e\u0e31\u0e01\u0e04\u0e23\u0e39','\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e2d\u0e19','\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e49\u0e33','\u0e2b\u0e49\u0e2d\u0e07\u0e04\u0e23\u0e31\u0e27','\u0e2b\u0e49\u0e2d\u0e07\u0e1b\u0e23\u0e30\u0e0a\u0e38\u0e21'];
 
 function parseFloor(raw){
- const s=TRIM(raw);const m=s.match(/(?:\u0e0a\u0e31\u0e49\u0e19|floor|level)\s*(?:[:#\-]?\s*)(-?\d{1,2}|\u0e2b\u0e19\u0e36\u0e48\u0e07|\u0e2a\u0e2d\u0e07|\u0e2a\u0e32\u0e21|\u0e2a\u0e35\u0e48|\u0e2b\u0e49\u0e32|\u0e2b\u0e01)/i);
+ const s=TRIM(raw);const m=s.match(/(?:\u0e0a\u0e31\u0e49\u0e19|floor|level)\s*(?:[:#]?\s*)(-?\d{1,2}|\u0e2b\u0e19\u0e36\u0e48\u0e07|\u0e2a\u0e2d\u0e07|\u0e2a\u0e32\u0e21|\u0e2a\u0e35\u0e48|\u0e2b\u0e49\u0e32|\u0e2b\u0e01)/i);
  if(m){const v=/^-?\d+$/.test(m[1])?Number(m[1]):NUM_WORDS[m[1]];return v>=-4&&v<=99?String(v):null;}
  if(/\u0e0a\u0e31\u0e49\u0e19\u0e25\u0e48\u0e32\u0e07|ground floor/i.test(s))return '1';
  if(/\u0e0a\u0e31\u0e49\u0e19\u0e43\u0e15\u0e49\u0e14\u0e34\u0e19|basement/i.test(s))return '-1';
@@ -951,8 +951,11 @@ function createAtlas({characterName='Character',characterText='',entries=[],forc
   interactiveRooms:true,dynamicRoomContext:false,styleProfile,roomStages:{},placePins:[],placeTarget:null,
   sourceEntryCount:entries.length,pendingReset:false,status:'',lastTime:'',initialized:true};
 }
-function fromOld(old){if(!old||!Array.isArray(old.markers))return null;const a=createAtlas({characterName:old.characterName,forcedKind:old.kind||'city'});
- a.root.markers=clone(old.markers).map(cleanBaseMarker);a.root.name=old.title||a.root.name;a.baseRoot=clone(a.root);a.title=a.root.name;a.areas[0].name=a.title;return a;}
+function fromOld(old){if(!old||!Array.isArray(old.markers))return null;
+ try{const legacy=normalizeImported({...old,kind:['city','school','fantasy'].includes(old.kind)?old.kind:'city'});
+  const a=createAtlas({characterName:legacy.characterName,forcedKind:legacy.kind});
+  a.root.markers=legacy.markers.map(cleanBaseMarker);a.root.name=legacy.title||a.root.name;a.baseRoot=clone(a.root);a.title=a.root.name;a.areas[0].name=a.title;return a;
+ }catch{return null;}}
 function collectManual(a){const found=[];
  for(const [areaId,site] of [['area_root',a.root],...Object.entries(a.sites||{})]){
   for(const p of site?.markers||[])if(p.origin==='manual')found.push({areaId,point:clone(p),areaName:a.areas.find(x=>x.id===areaId)?.name||''});
@@ -960,11 +963,27 @@ function collectManual(a){const found=[];
  return found;
 }
 function normalizeAtlas(value){if(!value||![3,4,5,6,7,8,9,10].includes(value.version)||!Array.isArray(value.areas)||!value.root||!Array.isArray(value.root.markers))return null;
- const a=clone(value);a.actors=safeNext(a.actors);a.journal=safeNext(a.journal);a.signatures=safeNext(a.signatures);
- a.sites=a.sites||{};a.rooms=a.rooms||{};a.manual=safeNext(a.manual);a.extraBooks=safeNext(a.extraBooks);a.showFog=a.showFog!==false;
+ const record=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+ const safeId=v=>typeof v==='string'&&v.length>0&&v.length<=512&&!['__proto__','prototype','constructor'].includes(v);
+ const point=v=>record(v)&&safeId(v.id)&&typeof v.name==='string'&&Number.isFinite(v.x)&&Number.isFinite(v.y)&&Math.abs(v.x)<=16000&&Math.abs(v.y)<=16000;
+ const location=v=>record(v)&&safeId(v.areaId)&&[v.buildingId,v.floorId,v.roomId].every(x=>x==null||safeId(x));
+ if(!record(value.root)||value.areas.some(v=>!point(v))||value.root.markers.some(v=>!point(v)))return null;
+ let a;try{a=clone(value);}catch{return null;}
+ a.areas=a.areas.slice(0,400);
+ if(!a.areas.some(v=>v.id==='area_root'))a.areas.unshift({id:'area_root',name:TRIM(a.root.name)||'World',x:600,y:410,discovered:true,known:true,estimated:true});
+ a.root.markers=a.root.markers.slice(0,1000);
+ a.current=location(a.current)?a.current:{areaId:'area_root',buildingId:null,floorId:null,roomId:null,raw:'',turn:0};
+ a.browse=location(a.browse)?a.browse:null;
+ a.actors=safeNext(a.actors).filter(v=>record(v)&&safeId(v.id)&&typeof v.name==='string'&&['user','char','npc'].includes(v.role)).map(v=>({...v,position:location(v.position)?v.position:null}));
+ a.journal=safeNext(a.journal).filter(record);a.signatures=safeNext(a.signatures).filter(v=>typeof v==='string');
+ a.sites=Object.fromEntries(Object.entries(record(a.sites)?a.sites:{}).filter(([k,v])=>safeId(k)&&record(v)&&Array.isArray(v.markers)&&v.markers.every(point)));
+ a.rooms=Object.fromEntries(Object.entries(record(a.rooms)?a.rooms:{}).filter(([k,v])=>safeId(k)&&record(v)&&typeof v.name==='string'&&location({...v,roomId:v.name})));
+ a.manual=safeNext(a.manual).filter(v=>record(v)&&safeId(v.areaId)&&point(v.point));a.extraBooks=safeNext(a.extraBooks).filter(v=>typeof v==='string'&&v.trim()&&v.length<140).slice(0,64);a.sources=safeNext(a.sources).filter(v=>typeof v==='string');a.showFog=a.showFog!==false;
+ if(a.baseRoot&&(!record(a.baseRoot)||!Array.isArray(a.baseRoot.markers)||!a.baseRoot.markers.every(point)))a.baseRoot=null;
+ a.turns=Math.max(0,Math.trunc(Number(a.turns)||0));a.seed=Math.max(0,Math.trunc(Number(a.seed)||0));
  a.revealLore=a.revealLore===true;a.journalTexts=safeNext(a.journalTexts);
- a.followUser=a.followUser!==false;a.autoOpen=a.autoOpen!==false;a.view=Math.max(0,Math.min(3,Number(a.view)||0));a.browse=a.browse||null;
- a.roomStages=typeof a.roomStages==='object'&&!Array.isArray(a.roomStages)&&a.roomStages?a.roomStages:{};
+ a.followUser=a.followUser!==false;a.autoOpen=a.autoOpen!==false;a.view=Math.max(0,Math.min(3,Math.trunc(Number(a.view)||0)));a.browse=a.browse||null;
+ a.roomStages=Object.fromEntries(Object.entries(record(a.roomStages)?a.roomStages:{}).filter(([k,v])=>safeId(k)&&record(v)&&record(v.tokens)&&Array.isArray(v.lastPath)).slice(0,100));
  a.interactiveRooms=a.interactiveRooms!==false; a.dynamicRoomContext=a.dynamicRoomContext===true; a.styleProfile=a.styleProfile||inferStyleProfile({characterName:a.characterName,extraSourceNames:a.sources||[],baseKind:a.kind});
  if(a.version===3){const oldManual=collectManual(a);const have=new Set(a.manual.map(x=>x.point?.id));
   for(const op of oldManual)if(!have.has(op.point.id))a.manual.push(op);
@@ -1494,7 +1513,7 @@ function publicStoryLines(chat,{assistantOnly=false}={}){
     .replace(/<[^>]*>/g,' ')
     .slice(0,15000);
   for(const line of text.split(/[\n.!?。！？;；]+/)){
-    const value=clean(line).slice(0,420);
+    const value=String(line).replace(/\s+/g,' ').trim().slice(0,420);
     if(value.length>=6)result.push(value);
   }
  }
@@ -1709,7 +1728,7 @@ function inspectArea(atlas,{level,point,focus,radius=180}={},chat=[]){
   (level===0 || level===1&&eq(current.buildingId,scope.buildingId) || level===2&&eq(current.buildingId,scope.buildingId)&&eq(current.floorId,scope.floorId));
  // Only public assistant narration establishes environmental facts. Never infer a
  // hospital's weather simply because it was mentioned next to a rainy school.
- const assistantLines=publicStoryLines(chat,{assistantOnly:true});
+ const assistantLines=storyLines;
  const scopedLines=scopedFactLines(assistantLines,point,atlas,{isCurrent});
  // For the current scene, only statements that mention NO other known place
  // can serve as unnamed scene context. Keep their real chronological order.
@@ -1785,19 +1804,21 @@ function normalizePlaceActions(atlas){
 function pinned(atlas,ref){return !!ref?.key && !!atlas?.placePins?.some(p=>p.key===ref.key);}
 function targeted(atlas,ref){return !!ref?.key && atlas?.placeTarget?.key===ref.key;}
 function togglePin(atlas,ref){
- if(!atlas || !validRef(ref))return false;
+ const safeRef=sanitizeRef(ref);
+ if(!atlas || !safeRef)return false;
  normalizePlaceActions(atlas);
  const at=atlas.placePins.findIndex(p=>p.key===ref.key);
  if(at>=0){atlas.placePins.splice(at,1);return false;}
  // Limit prevents unbounded growth of per-chat metadata.
  if(atlas.placePins.length>=MAX_PINS)atlas.placePins.shift();
- atlas.placePins.push(sanitizeRef(ref));return true;
+ atlas.placePins.push(safeRef);return true;
 }
 function toggleTarget(atlas,ref){
- if(!atlas||!validRef(ref))return false;
+ const safeRef=sanitizeRef(ref);
+ if(!atlas||!safeRef)return false;
  normalizePlaceActions(atlas);
  if(targeted(atlas,ref)){atlas.placeTarget=null;return false;}
- atlas.placeTarget=sanitizeRef(ref);return true;
+ atlas.placeTarget=safeRef;return true;
 }
 // Resolve against CURRENT revealed atlas. Stale/hidden pins remain as private notes,
 // but are never displayed or made navigable as spoiler locations.
@@ -1849,6 +1870,7 @@ const {REVEALED_ONLY_RULE}=__nmModules['area-inspector.js'];
 const DB_NAME='neon-map-image-cache-v1';
 const STORE='renders';
 const activeObjectUrls=new Map();
+const volatileRenders=new Map();
 
 const IMAGE_DEFAULTS={
   enabled:false,
@@ -1868,10 +1890,8 @@ function ensureImageSettings(atlas){
   if(!atlas) return {...IMAGE_DEFAULTS};
   const raw=atlas.imageSettings||{};
   // Never persist secrets in chat metadata or exported map JSON. Strip keys left by v0.8.0.
-  const {apiKey:_unsafeOldKey, ...safeRaw}=raw;
   atlas.imageSettings={
     ...IMAGE_DEFAULTS,
-    ...safeRaw,
     width: clamp64(raw.width, 1024),
     height: clamp64(raw.height, 768),
     enabled: raw.enabled===true,
@@ -1898,6 +1918,7 @@ function openDb(){
     req.onupgradeneeded=()=>{const db=req.result; if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'});};
     req.onsuccess=()=>resolve(req.result);
     req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+    req.onblocked=()=>reject(new Error('Image cache is blocked by another tab'));
   });
 }
 async function withStore(mode, fn){
@@ -1926,29 +1947,34 @@ function revokeActive(key){
 
 async function getCachedRender(key){
   if(!key) return null;
-  const row=await withStore('readonly',(store)=>new Promise((resolve,reject)=>{const req=store.get(key); req.onsuccess=()=>resolve(req.result||null); req.onerror=()=>reject(req.error);}));
+  const row=volatileRenders.get(key)||await withStore('readonly',(store)=>new Promise((resolve,reject)=>{const req=store.get(key); req.onsuccess=()=>resolve(req.result||null); req.onerror=()=>reject(req.error);})).catch(()=>null);
   if(!row?.blob) return null;
   revokeActive(key);
   const url=URL.createObjectURL(row.blob);
   activeObjectUrls.set(key,url);
+  if(activeObjectUrls.size>24)revokeActive(activeObjectUrls.keys().next().value);
   return {key,url,meta:row.meta||{},updatedAt:row.updatedAt||0};
 }
 
 async function saveRender(key, blob, meta={}){
   if(!key || !(blob instanceof Blob)) throw new Error('Missing cached image data');
-  await withStore('readwrite',(store)=>store.put({id:key,blob,meta,updatedAt:Date.now()}));
+  const row={id:key,blob,meta,updatedAt:Date.now()};
+  try{await withStore('readwrite',(store)=>store.put(row));volatileRenders.delete(key);}
+  catch(error){volatileRenders.set(key,row);if(volatileRenders.size>12)volatileRenders.delete(volatileRenders.keys().next().value);console.warn('[NEON MAP] Persistent image cache unavailable; retaining image in this tab',error);}
   return getCachedRender(key);
 }
 
 async function clearRender(key){
   if(!key) return;
   revokeActive(key);
-  await withStore('readwrite',(store)=>store.delete(key));
+  volatileRenders.delete(key);
+  await withStore('readwrite',(store)=>store.delete(key)).catch(()=>{});
 }
 
 async function clearAllRenders(){
   for(const key of [...activeObjectUrls.keys()]) revokeActive(key);
-  await withStore('readwrite',(store)=>store.clear());
+  volatileRenders.clear();
+  await withStore('readwrite',(store)=>store.clear()).catch(()=>{});
 }
 
 function hash(text){
@@ -2003,7 +2029,7 @@ function currentViewDescriptor(atlas, level=atlas?.view||0, namespace='', settin
   const data=viewData(atlas, level);
   const viewPublic=viewIsRevealed(atlas,level,focus);
   const title=viewPublic?(String(levelName(atlas, level)||'Map').trim() || 'Map'):'Unexplored location';
-  let rawId='';
+  let rawId;
   if(level===0) rawId=`world::${atlas?.title||atlas?.root?.name||'world'}`;
   else if(level===1) rawId=`site::${focus.areaId||'area_root'}`;
   else if(level===2) rawId=`floor::${focus.areaId||'area_root'}::${focus.buildingId||'none'}::${focus.floorId||'all'}`;
@@ -2211,7 +2237,7 @@ async function generateAndCacheView(atlas, level, {signal, onStatus, approvedPai
 return {IMAGE_DEFAULTS,ensureImageSettings,getCachedRender,saveRender,clearRender,clearAllRenders,currentViewDescriptor,buildPrompt,cancelHordeJob,generateAndCacheView};
 })();
 __nmModules['index.js']=(()=>{
-// NEON MAP v0.9.15: stable local atlas + optional user-triggered image generation.
+// NEON MAP v0.9.17: stable local atlas + optional user-triggered image generation.
 // Never inject prompts into chat generation. Optional AI image calls are direct provider requests, separate from roleplay.
 const {t}=__nmModules['labels.js'];
 const {backgroundSvg}=__nmModules['backgrounds.js'];
@@ -2240,6 +2266,7 @@ const K={
 };
 const $ = id => document.getElementById(id);
 let atlas=null, chatKey='', epoch=0, ready=false, panelOpen=false, selectedPoint=null, inspectorExpanded=false;
+let chatLoading=false, loadJob=null;
 let zoom=1, dx=0, dy=0, down=null, activeBooks=new Set(), cacheBooks=[], busy=false, demo=false;
 let loreTimer=null,chatTimer=null,pendingReplay=false, imgBusy=false, imgAbort=null, visibleImageKey='';
 let autoImageAttempts=new Set();
@@ -2264,32 +2291,37 @@ function saveFloatingPrefs(){
  }));}catch{}
 }
 function clampNumber(value,min,max){return Math.max(min,Math.min(max,value));}
+function viewportBounds(){
+ const v=window.visualViewport;
+ return {left:v?.offsetLeft||0,top:v?.offsetTop||0,width:v?.width||innerWidth,height:v?.height||innerHeight};
+}
 function launchPosition(){
  const el=$('nm-launch');if(!el)return;
  const width=Math.max(56,el.offsetWidth||58),height=Math.max(56,el.offsetHeight||58);
- const w=window.innerWidth,h=window.innerHeight,edge=8;
- const maxX=Math.max(edge,w-width-edge),maxY=Math.max(edge,h-height-edge);
- const x=clampNumber(Number.isFinite(floatingUI.x)?floatingUI.x:w-width-16,edge,maxX);
- const y=clampNumber(Number.isFinite(floatingUI.y)?floatingUI.y:h-height-100,edge,maxY);
- floatingUI.x=x;floatingUI.y=y;
+ const v=viewportBounds(),edge=8;
+ const maxX=Math.max(v.left+edge,v.left+v.width-width-edge),maxY=Math.max(v.top+edge,v.top+v.height-height-edge);
+ const x=clampNumber(Number.isFinite(floatingUI.x)?floatingUI.x:v.left+v.width-width-16,v.left+edge,maxX);
+ const y=clampNumber(Number.isFinite(floatingUI.y)?floatingUI.y:v.top+v.height-height-100,v.top+edge,maxY);
+ // Clamping for a keyboard or a smaller orientation must not destroy the saved position.
  el.style.left=Math.round(x)+'px';el.style.top=Math.round(y)+'px';
  el.style.right='auto';el.style.bottom='auto';
 }
 function panelDimensions(){
  const panel=$('nm-panel');if(!panel)return;
- const w=window.innerWidth,h=window.innerHeight;
+ const v=viewportBounds(),w=v.width,h=v.height;
  const narrow=w<=800;
- const maxWidth=Math.max(180,w-(narrow?10:24));
+ const maxWidth=Math.max(1,w-(narrow?10:24));
  const minWidth=Math.min(maxWidth,narrow?268:420);
  const defaultWidth=narrow?maxWidth:Math.min(920,Math.round(w*.74));
- const minHeight=Math.min(Math.max(250,Math.round(h*.37)),Math.max(200,h-14));
- const maxHeight=Math.max(minHeight,h-14);
+ const maxHeight=Math.max(1,h-14);
+ const minHeight=Math.min(Math.max(250,Math.round(h*.37)),maxHeight);
  const defaultHeight=Math.round(h*(narrow?.68:.66));
  const width=clampNumber(floatingUI.width??defaultWidth,minWidth,maxWidth);
  const height=clampNumber(floatingUI.height??defaultHeight,minHeight,maxHeight);
  panel.style.width=Math.round(width)+'px';panel.style.height=Math.round(height)+'px';
- panel.style.top='auto';panel.style.left='auto';
- panel.style.bottom=narrow?'5px':'12px';panel.style.right=narrow?'5px':'12px';
+ panel.style.top=Math.round(v.top+h-height-(narrow?5:7))+'px';
+ panel.style.left=Math.round(v.left+w-width-(narrow?5:12))+'px';
+ panel.style.bottom='auto';panel.style.right='auto';
 }
 function adjustPanelSize(delta){
  const panel=$('nm-panel');if(!panel)return;
@@ -2309,7 +2341,37 @@ function setDetailsOpen(open){
 }
 function installFloatingControls(){
  loadFloatingPrefs();
- panelDimensions();
+ panelDimensions();launchPosition();
+ const launch=$('nm-launch');let drag=null,suppressClick=false;
+ launch.addEventListener('pointerdown',event=>{
+  if(!event.isPrimary||event.button!==0)return;
+  const rect=launch.getBoundingClientRect();
+  drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:rect.left,top:rect.top,moved:false};
+  try{launch.setPointerCapture(event.pointerId);}catch{}
+ });
+ launch.addEventListener('pointermove',event=>{
+  if(!drag||drag.id!==event.pointerId)return;
+  const x=event.clientX-drag.x,y=event.clientY-drag.y;
+  if(Math.hypot(x,y)>7)drag.moved=true;
+  if(!drag.moved)return;
+  event.preventDefault();
+  floatingUI.x=drag.left+x;floatingUI.y=drag.top+y;launchPosition();
+ });
+ const endDrag=event=>{
+  if(!drag||drag.id!==event.pointerId)return;
+  if(drag.moved){
+   suppressClick=true;
+   floatingUI.x=parseFloat(launch.style.left);floatingUI.y=parseFloat(launch.style.top);
+   saveFloatingPrefs();setTimeout(()=>{suppressClick=false;},0);
+  }
+  drag=null;
+ };
+ launch.addEventListener('pointerup',endDrag);
+ launch.addEventListener('pointercancel',endDrag);
+ launch.addEventListener('lostpointercapture',endDrag);
+ launch.addEventListener('click',event=>{
+  if(suppressClick&&event.detail!==0){event.preventDefault();event.stopImmediatePropagation();suppressClick=false;}
+ },true);
  const wireResize=(id,both)=>{
   const grip=$(id);if(!grip)return;
   let active=null;
@@ -2330,6 +2392,7 @@ function installFloatingControls(){
   const finish=event=>{if(active?.id===event.pointerId){active=null;saveFloatingPrefs();}};
   grip.addEventListener('pointerup',finish);
   grip.addEventListener('pointercancel',finish);
+  grip.addEventListener('lostpointercapture',finish);
  };
  wireResize('nm-sheet-resizer',false);
  wireResize('nm-resize-corner',true);
@@ -2340,7 +2403,10 @@ function installFloatingControls(){
  $('nm-window-shrink')?.addEventListener('click',()=>adjustPanelSize(-120));
  $('nm-window-expand')?.addEventListener('click',()=>adjustPanelSize(120));
  $('nm-details-toggle')?.addEventListener('click',()=>setDetailsOpen(!floatingUI.detailsOpen));
- window.addEventListener('resize',()=>{panelDimensions();if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);});
+ const resize=()=>{panelDimensions();launchPosition();if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);};
+ window.addEventListener('resize',resize);
+ window.visualViewport?.addEventListener('resize',resize);
+ window.visualViewport?.addEventListener('scroll',resize);
 }
 
 const REGION_RADIUS={0:205,1:225,2:155};
@@ -2348,8 +2414,9 @@ const REGION_RADIUS={0:205,1:225,2:155};
 const sessionImageKeys=new Map();
 const sessionKeyFor=(provider)=>{const key=chatKey+'|'+provider; if(provider==='pollinations' && (walletAuthExpiry.get(key)||0)<Date.now()){sessionImageKeys.delete(key);return '';}return sessionImageKeys.get(key)||'';};
 const st=()=>{try{return globalThis.SillyTavern?.getContext?.()||null;}catch{return null;}};
-const contextKey=ctx=>ctx?.chatId!=null?String(ctx.chatId)+'/'+String(ctx.characterId??ctx.groupId??''):'none';
-const currentChat=()=>{const c=st();return c && c.chatId!=null && (c.characterId!=null || c.groupId!=null);};
+const hasChat=ctx=>ctx?.chatId!=null&&ctx.chatId!==''&&(ctx.groupId!=null&&ctx.groupId!==''||ctx.characterId!=null&&ctx.characterId!=='');
+const contextKey=ctx=>hasChat(ctx)?JSON.stringify([ctx.groupId!=null&&ctx.groupId!==''?'group':'character',ctx.groupId!=null&&ctx.groupId!==''?ctx.groupId:ctx.characterId,ctx.chatId]):'none';
+const currentChat=()=>hasChat(st());
 const safe=v=>String(v??'').trim().slice(0,120);
 const trace=(msg,err=false)=>{const el=$('nm-status');if(el){el.textContent=msg;el.classList.toggle('nm-error',err);}};
 const charInfo=(ctx)=>{
@@ -2372,8 +2439,8 @@ async function linkedBooks(ctx) {
  const c=charInfo(ctx);let worldSettings={},selectedWorlds=[];
  try{
   const mod=await worldInfoModule();
-  worldSettings=mod.getWorldInfoSettings?.()?.world_info||{};
-  selectedWorlds=mod.selected_world_info||[];
+  worldSettings=mod?.getWorldInfoSettings?.()?.world_info||{};
+  selectedWorlds=mod?.selected_world_info||[];
  }catch(e){console.debug('[NEON MAP] Optional world-info settings unavailable',e);}
  return linkedWorldNames({ctx,card:c,worldSettings,selectedWorlds,
    extraBooks:[...activeBooks,...(Array.isArray(atlas?.extraBooks)?atlas.extraBooks:[]),
@@ -2382,10 +2449,11 @@ async function linkedBooks(ctx) {
 async function makeAtlas(ctx, token, seed=0, revealLore=false) {
  const c=charInfo(ctx);const entries=[],found=[];
  const linked=await linkedBooks(ctx);
+ if(token!==epoch||contextKey(ctx)!==contextKey(st()))return null;
  const wi=typeof ctx.loadWorldInfo==='function'?null:await worldInfoModule();
  const loadBook=typeof ctx.loadWorldInfo==='function'?ctx.loadWorldInfo.bind(ctx):wi?.loadWorldInfo;
  for(const name of linked){
-   try{const data=await loadBook?.(name);if(!data?.entries)continue;
+   try{const data=await loadBook?.(name);if(token!==epoch||contextKey(ctx)!==contextKey(st()))return null;if(!data?.entries)continue;
      found.push(name);
      for(const e of Object.values(data.entries)){
        if(!e||e.disable||e.disabled)continue;
@@ -2404,18 +2472,20 @@ async function makeAtlas(ctx, token, seed=0, revealLore=false) {
  return built;
 }
 function show(open){
- panelOpen=!!open;
  const panel=$('nm-panel'),launch=$('nm-launch');
  if(!panel)return;
+ panelOpen=!!open;
  panel.hidden=!panelOpen;if(launch)launch.hidden=panelOpen;
+ launch?.setAttribute('aria-expanded',String(panelOpen));
  globalThis.__NEON_MAP_OPEN=panelOpen;
  document.dispatchEvent(new CustomEvent('neon-map:visibility',{detail:{open:panelOpen}}));
  if(!panelOpen){
-   if(imgAbort){try{imgAbort.abort();}catch{}}
-   setDetailsOpen(false);if(launch)launchPosition();return;
+   cancelImageWork();clearVisibleImage();
+   setDetailsOpen(false);if(launch){launchPosition();launch.focus({preventScroll:true});}return;
  }
  panelDimensions();setDetailsOpen(false);
- requestAnimationFrame(()=>{try{draw();fit();if(atlas?.followUser)focusUser();}catch(error){console.error('[NEON MAP] Map render failed but panel stays open',error);trace('Map render error: '+String(error?.message||error).slice(0,100),true);}});
+ $('nm-close').focus({preventScroll:true});
+ requestAnimationFrame(()=>{if(!panelOpen)return;try{draw();fit();if(atlas?.followUser)focusUser();}catch(error){console.error('[NEON MAP] Map render failed but panel stays open',error);trace('Map render error: '+String(error?.message||error).slice(0,100),true);}});
 }
 // Update in-memory chatMetadata now; coalesce explicit server saves.
 // SillyTavern's regular chat save may already persist the same metadata.
@@ -2426,27 +2496,51 @@ async function persist(urgent=false,turn=false) {
  if(!ok&&saver.stats().error)trace('Local map updated, but server save failed. Export JSON to back up.',true);
  return ok;
 }
+function setChatControls(enabled){
+ for(const el of document.querySelectorAll('#nm-aside button, #nm-aside input:not(#nm-auto), #nm-aside select, #nm-aside textarea, #nm-levels button, #nm-panel .nm-topline button, #nm-panel .nm-zoom button'))el.disabled=!enabled;
+ $('nm-auto').checked=floatingUI.autoOpen;
+}
+function clearChatView(){
+ for(const id of ['nm-background','nm-points','nm-people','nm-fog-layer','nm-region-highlight','nm-room-grid','nm-cast','nm-moves','nm-goal-line','nm-saved-list'])$(id)?.replaceChildren();
+ for(const id of ['nm-place-card','nm-place-sheet','nm-room-grid','nm-room-tools','nm-pollinations-cancel','nm-img-cancel']){const el=$(id);if(el)el.hidden=true;}
+ for(const id of ['nm-source-list','nm-turns','nm-pollinations-auth-info']){const el=$(id);if(el)el.textContent='';}
+ $('nm-img-key').value='';$('nm-pin-count').textContent='0 จุด';$('nm-map-title').textContent='NEON MAP';
+ $('nm-location').textContent=K.current+': '+K.unknown;$('nm-empty').hidden=false;
+ $('nm-empty').textContent=chatLoading?'กำลังอ่านข้อมูลแชท…':K.noChat;
+ clearVisibleImage();setChatControls(false);
+}
 async function loadChat() {
- const token=++epoch;const ctx=st();const next=contextKey(ctx);
- if(chatKey===next&&atlas)return;
- if(imgAbort){try{imgAbort.abort();}catch{}}
- if(walletAuthAbort){try{walletAuthAbort.abort();}catch{}}
- chatKey=next;saver.changeChat(next);activeBooks.clear();pendingReplay=false;selectedPoint=null;inspectorExpanded=false;autoImageAttempts.clear();clearVisibleImage();
- if(!currentChat()) {atlas=null;show(false);return;}
- const old=ctx.chatMetadata?.[KEY];const oldSecretPresent=!!old?.imageSettings?.apiKey;atlas=normalizeAtlas(old);
- if(!atlas)atlas=fromOld(ctx.chatMetadata?.[LEGACY]);
- for(const name of (atlas?.extraBooks||[]))activeBooks.add(name);
- if(atlas){ensureImageSettings(atlas);normalizePlaceActions(atlas);} // scrub older plaintext keys and normalize place notes
- const needsLoreRefresh=!!old && (!old.styleProfile || Number(old.styleProfile.schema||0)<2 || old.sourceEntryCount==null || Number(old.version||0)<9);
- trace('Reading chat / Lorebooks (local only)');
- if(!atlas)atlas=await makeAtlas(ctx,token);
- if(token!==epoch||!atlas)return;
- const result=processHistory(atlas,ctx.chat||[],names(ctx));
- if(result.changed || !old || old.version!==10 || oldSecretPresent)void persist(!old||old.version!==10||oldSecretPresent, result.newTurns>0);
- if(atlas.followUser)atlas.view=bestView(atlas);
- draw();if(floatingUI.autoOpen)show(true);
- if(needsLoreRefresh) scheduleLoreRefresh();
- trace(`Local only | ${atlas.turns} turns | ${atlas.journal.length} moves`);
+ const ctx=st(),next=contextKey(ctx);
+ // Duplicate CHAT_CHANGED events must not cancel the job already loading this chat.
+ if(chatKey===next){if(loadJob)return loadJob;if(atlas)return;}
+ const token=++epoch;
+ cancelImageWork();walletAuthAbort?.abort();walletAuthAbort=null;walletAuthBusy=false;
+ if(loreTimer)clearTimeout(loreTimer);if(chatTimer)clearTimeout(chatTimer);
+ loreTimer=null;chatTimer=null;
+ chatKey=next;atlas=null;chatLoading=hasChat(ctx);saver.changeChat(next);activeBooks.clear();pendingReplay=false;selectedPoint=null;inspectorExpanded=false;autoImageAttempts.clear();
+ clearChatView();
+ if(!chatLoading){loadJob=null;trace(K.noChat);return;}
+ const job=(async()=>{
+  const old=ctx.chatMetadata?.[KEY];
+  let loaded=normalizeAtlas(old)||fromOld(ctx.chatMetadata?.[LEGACY]);
+  for(const name of loaded?.extraBooks||[])activeBooks.add(name);
+  trace('Reading chat / Lorebooks (local only)');
+  if(!loaded)loaded=await makeAtlas(ctx,token);
+  if(token!==epoch||next!==contextKey(st())||!loaded)return;
+  ensureImageSettings(loaded);normalizePlaceActions(loaded);
+  const settingsChanged=JSON.stringify(old?.imageSettings||{})!==JSON.stringify(loaded.imageSettings);
+  atlas=loaded;chatLoading=false;
+  const result=processHistory(atlas,st()?.chat||ctx.chat||[],names(ctx));
+  if(result.changed||!old||old.version!==10||settingsChanged)void persist(true,result.newTurns>0);
+  if(atlas.followUser)atlas.view=bestView(atlas);
+  setChatControls(true);draw();if(floatingUI.autoOpen)show(true);
+  if(old&&(!old.styleProfile||Number(old.styleProfile.schema||0)<2||old.sourceEntryCount==null||Number(old.version||0)<9))scheduleLoreRefresh();
+  trace(`Local only | ${atlas.turns} turns | ${atlas.journal.length} moves`);
+ })();
+ loadJob=job;
+ try{await job;}
+ catch(error){if(token===epoch){atlas=null;chatLoading=false;clearChatView();trace('อ่านข้อมูลแชทไม่สำเร็จ: '+String(error?.message||error).slice(0,100),true);}console.error('[NEON MAP] Chat load failed',error);}
+ finally{if(loadJob===job){loadJob=null;chatLoading=false;}}
 }
 async function updateFromTurn() {
  const ctx=st();if(!atlas||ctx?.chatId==null||chatKey!==contextKey(ctx))return;
@@ -2465,14 +2559,19 @@ async function updateFromTurn() {
  if(change.changed){if(atlas.followUser)atlas.view=bestView(atlas);void persist(false,true);draw();if(atlas.followUser)focusUser();trace(`Local | ${atlas.turns} turns | ${atlas.journal.length} moves`);}
 }
 function renderShell(){
- const root=document.createElement('div');root.id='neon-map-v3';
- root.innerHTML=`
+ const root=$('neon-map-v3')||document.createElement('div');root.id='neon-map-v3';
+ if(!$('nm-launch')){
+  const launch=document.createElement('button');launch.id='nm-launch';launch.type='button';launch.textContent='MAP';
+  launch.setAttribute('aria-label','เปิดแผนที่ NEON MAP');launch.setAttribute('aria-controls','nm-panel');launch.setAttribute('aria-expanded','false');
+  launch.addEventListener('click',()=>show(true));root.append(launch);
+ }
+ root.insertAdjacentHTML('beforeend',`
  <section id="nm-panel" role="region" aria-label="NEON MAP floating bottom map" hidden>
  <div id="nm-sheet-resizer" role="separator" tabindex="0" aria-label="Drag up or down to resize map height" aria-orientation="horizontal"><span></span></div><button type="button" id="nm-resize-corner" aria-label="Drag to resize map width and height" title="Drag to resize">&#8698;</button>
  <header class="nm-head"><span class="nm-brand">N<span>NEON ATLAS</span></span><div class="nm-head-right"><span class="nm-noai" id="nm-ai-mode">LOCAL MAP</span><button type="button" id="nm-details-toggle" aria-label="Toggle map details" aria-pressed="false">&#9776; Info</button><button type="button" id="nm-window-shrink" title="Shrink map window" aria-label="Shrink map window">&#8722;</button><button type="button" id="nm-window-expand" title="Expand map window" aria-label="Expand map window">&#10530;</button><button type="button" id="nm-close" title="Close to floating button" aria-label="Close map to floating button">&#10005;</button></div></header>
- <div class="nm-summary"><strong>v0.9.15 · Open from chat · Floating dock</strong><span id="nm-status">${K.noChat}</span></div>
+ <div class="nm-summary"><strong>v0.9.17 · NEON MAP</strong><span id="nm-status">${K.noChat}</span></div>
  <nav id="nm-levels" aria-label="Map levels"><button data-level="0">1 · ${K.world}</button><button data-level="1">2 · ${K.site}</button><button data-level="2">3 · ${K.floor}</button><button data-level="3">4 · ${K.room}</button></nav>
- <div class="nm-topline"><button id="nm-prev" title="Previous level">&#10094;</button><span id="nm-location">${K.location}</span><button id="nm-next" title="Next level">&#10095;</button><button id="nm-follow" title="${K.follow}">&#9678;</button></div>
+ <div class="nm-topline"><button id="nm-prev" title="Previous level">&#10094;</button><span id="nm-location">${K.current}</span><button id="nm-next" title="Next level">&#10095;</button><button id="nm-follow" title="${K.follow}">&#9678;</button></div>
  <div class="nm-body"><div id="nm-viewport" aria-label="Interactive schematic map" tabindex="0">
    <div id="nm-canvas"><svg id="nm-background" aria-hidden="true"></svg><img id="nm-ai-image" alt="AI map background" hidden><div id="nm-points"></div><svg id="nm-fog-layer" aria-hidden="true"></svg><svg id="nm-region-highlight" aria-hidden="true"></svg><svg id="nm-room-grid" aria-label="GM room grid" hidden></svg><div id="nm-people"></div></div>
    <div class="nm-stage"><b id="nm-map-title">NEON MAP</b><small id="nm-stage-note">${K.inferred}</small></div>
@@ -2527,7 +2626,7 @@ function renderShell(){
      <small id="nm-img-note">ค่าเริ่มต้นปิดภาพประกอบ โหมด Local Pixel ฟรีและทำงานในเบราว์เซอร์ ไม่ส่งเข้า Prompt</small>
    </div></div></div><footer>${K.positions} · ${K.inferred}</footer>
  <input type="file" id="nm-import-file" accept="application/json,.json" hidden>
- </section>`;
+ </section>`);
  document.body.appendChild(root);
  installFloatingControls();
  $('nm-close').addEventListener('click',()=>show(false));
@@ -2580,19 +2679,19 @@ function renderShell(){
  $('nm-pollinations-cancel').addEventListener('click',()=>{walletAuthAbort?.abort();});
  $('nm-img-cancel').addEventListener('click',()=>{if(imgAbort){imgAbort.abort();trace('Cancelling image request…');}});
  $('nm-img-extra').addEventListener('blur',saveImageUi);
- $('nm-img-generate').addEventListener('click',()=>{const provider=imageState().provider||'none';if(provider==='pollinations' && !confirm('คำเตือน: คุณกำลังกดสร้างภาพในโหมดเสียเงินจริง ระบบจะมีการยืนยันอีกครั้งก่อนส่งคำขอจริง\n\nต้องการไปต่อหรือไม่?'))return;void generateCurrentMapImage(true);});
+ $('nm-img-generate').addEventListener('click',()=>{void generateCurrentMapImage(true);});
  $('nm-img-clear').addEventListener('click',()=>{void clearCurrentMapImage();});
  $('nm-img-clear-all').addEventListener('click',()=>{if(confirm('Clear every cached AI image stored in this browser?'))void clearAllMapImages();});
  const vp=$('nm-viewport');
- vp.addEventListener('pointerdown',e=>{if(e.target.closest('button, #nm-room-grid, #nm-place-card, #nm-place-sheet'))return;down={id:e.pointerId,x:e.clientX,y:e.clientY,panX:dx,panY:dy,time:Date.now(),moved:false};vp.setPointerCapture?.(e.pointerId);});
+ vp.addEventListener('pointerdown',e=>{if(!e.isPrimary||e.button!==0||e.target.closest('button, #nm-room-grid, #nm-place-card, #nm-place-sheet'))return;down={id:e.pointerId,x:e.clientX,y:e.clientY,panX:dx,panY:dy,time:Date.now(),moved:false};try{vp.setPointerCapture?.(e.pointerId);}catch{}});
  vp.addEventListener('pointermove',e=>{if(!down||down.id!==e.pointerId)return;const mx=e.clientX-down.x,my=e.clientY-down.y;if(Math.abs(mx)+Math.abs(my)>6)down.moved=true;
    dx=down.panX+mx;dy=down.panY+my;applyTransform();});
  vp.addEventListener('pointerup',e=>{if(!down||down.id!==e.pointerId)return;const mx=e.clientX-down.x,my=e.clientY-down.y;
-   if(Math.abs(mx)>88 && Math.abs(mx)>Math.abs(my)*1.45 && Date.now()-down.time<850){goLevel((atlas?.view||0)+(mx<0?1:-1));}down=null;});
+   down=null;});
  vp.addEventListener('pointercancel',()=>down=null);
+ vp.addEventListener('lostpointercapture',()=>down=null);
  vp.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.12:.9);},{passive:false});
- document.addEventListener('keydown',e=>{if(e.key!=='Escape'||!panelOpen)return;if(inspectorExpanded){inspectorExpanded=false;draw({selectionOnly:true});}else if(selectedPoint){selectedPoint=null;draw({selectionOnly:true});}else show(false);});
- window.addEventListener('resize',()=>{if(panelOpen)fit();});
+ document.addEventListener('keydown',e=>{if(e.defaultPrevented||e.key!=='Escape'||!panelOpen||!root.contains(document.activeElement))return;e.preventDefault();if(inspectorExpanded){inspectorExpanded=false;draw({selectionOnly:true});}else if(selectedPoint){selectedPoint=null;draw({selectionOnly:true});}else show(false);});
 }
 
 function roomPresentActors(loc){
@@ -2647,23 +2746,23 @@ async function onRoomGridClick(e){
 async function beginWalletConnection(){
  if(walletAuthBusy||!atlas)return;
  const savedChat=chatKey, appKey=String($('nm-pollinations-app-key')?.value||'').trim();
- walletAuthAbort=new AbortController();walletAuthBusy=true;
+ const controller=new AbortController();walletAuthAbort=controller;walletAuthBusy=true;
  const start=$('nm-pollinations-connect'),cancel=$('nm-pollinations-cancel'),info=$('nm-pollinations-auth-info');
  start.disabled=true;cancel.hidden=false;info.replaceChildren();
  try{
-   const result=await connectPollinationsDevice({appKey,signal:walletAuthAbort.signal,
-    onStatus:msg=>trace(msg),
+   const result=await connectPollinationsDevice({appKey,signal:controller.signal,
+    onStatus:msg=>{if(chatKey===savedChat&&walletAuthAbort===controller)trace(msg);},
     onChallenge:challenge=>{
-     if(chatKey!==savedChat)return;
+     if(chatKey!==savedChat||walletAuthAbort!==controller)return;
      const label=document.createElement('span');label.textContent='รหัสยืนยัน: '+challenge.userCode+' — ';
      const link=document.createElement('a');link.href=challenge.verificationUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent='เปิด Pollinations เพื่ออนุญาตวงเงิน';
      info.replaceChildren(label,link);trace('เปิดลิงก์ Pollinations และใส่รหัสเพื่ออนุญาตกระเป๋าเครดิต');
     }});
-   if(savedChat!==chatKey)return;
+   if(savedChat!==chatKey||walletAuthAbort!==controller||controller.signal.aborted)return;
    const k=savedChat+'|pollinations';sessionImageKeys.set(k,result.token);walletAuthExpiry.set(k,result.expiresAt);
    info.textContent='เชื่อมกระเป๋าเครดิตสำเร็จ (ใช้ได้เฉพาะแท็บนี้ / ยังต้องยืนยันก่อนเจนทุกครั้ง)';trace('Pollinations Wallet connected — paid image confirmations remain required');
- }catch(err){if(err?.name==='AbortError')trace('ยกเลิกการเชื่อมบัญชี Pollinations');else trace('เชื่อม Pollinations ไม่สำเร็จ: '+err.message,true);}
- finally{walletAuthBusy=false;walletAuthAbort=null;start.disabled=false;cancel.hidden=true;}
+ }catch(err){if(chatKey===savedChat&&walletAuthAbort===controller){if(err?.name==='AbortError')trace('ยกเลิกการเชื่อมบัญชี Pollinations');else trace('เชื่อม Pollinations ไม่สำเร็จ: '+err.message,true);}}
+ finally{if(walletAuthAbort===controller){walletAuthBusy=false;walletAuthAbort=null;start.disabled=false;cancel.hidden=true;}}
 }
 function disconnectWallet(){
  walletAuthAbort?.abort();const k=chatKey+'|pollinations';sessionImageKeys.delete(k);walletAuthExpiry.delete(k);
@@ -2699,16 +2798,14 @@ function localPixelPalette(kind,level,mood='base'){
  if(mood==='neon') return {...pal,bg:'#1a2035',panel:'#8fd3ff',panel2:'#ff76c8',line:'#f2f5ff',accent:'#ffc857',green:'#5ef0b3',blue:'#6f9dff'};
  return pal;
 }
-function drawPixelDecoration(ctx,w,h,seed,kind,level,pal){
+function drawPixelDecoration(ctx,w,h,seed,kind,level,pal,mood=localPixelMood()){
  const rng={v:hashText(seed+'::decor')};
  const cell=5;
- const mood=localPixelMood();
  for(let y=0;y<h;y+=cell){for(let x=0;x<w;x+=cell){const r=nextRand(rng);if(level<=1&&r>0.73){ctx.fillStyle=(kind==='city')?(r>0.88?pal.panel2:'#7b8a95'):(r>0.88?pal.green:'#89b96c');ctx.fillRect(x,y,1,1);}else if(level>=2&&r>0.79){ctx.fillStyle=r>0.9?pal.panel2:'#ddcfb8';ctx.fillRect(x,y,1,1);}if(mood==='neon'&&r>0.975){ctx.fillStyle=pal.accent;ctx.fillRect(x,y,1,1);}}}
  if(level<=1){ctx.fillStyle='rgba(255,255,255,.12)';for(let y=0;y<h;y+=14)ctx.fillRect(0,y,w,1);}
  if(kind!=='city'&&level<=1){ctx.fillStyle='rgba(0,0,0,.08)';for(let x=4;x<w;x+=18)ctx.fillRect(x,0,1,h);}
 }
-function drawPixelMarker(ctx,x,y,type,kind,seed,level){
- const mood=localPixelMood();
+function drawPixelMarker(ctx,x,y,type,kind,seed,level,mood=localPixelMood()){
  const pal=localPixelPalette(kind,level,mood);
  const tx=Math.round(x),ty=Math.round(y);
  const box=level===0?10:8;
@@ -2731,10 +2828,11 @@ function drawPixelMarker(ctx,x,y,type,kind,seed,level){
 }
 function backgroundMarkupForLocal(data){return data.level===0?worldBackground(data):data.level===1?(atlas?.seed>0?proceduralSiteBackground(data):backgroundSvg(data.kind)):data.level===2?floorBackground():(atlas?.interactiveRooms!==false?roomBackground(data):simpleRoomBackground());}
 function canvasToBlob(canvas){return new Promise((resolve,reject)=>{canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Canvas export failed')),'image/png');});}
-async function buildLocalPixelBlob(desc){
- if(!atlas||!desc) throw new Error('Missing atlas');
- const data=viewData(atlas, atlas.view);
- const seedKey=(desc.key||'map')+'::'+(atlas?.seed||0)+'::'+(data.kind||'world');
+async function buildLocalPixelBlob(desc,workAtlas){
+ if(!workAtlas||!desc) throw new Error('Missing atlas');
+ const data=desc.data,kind=data.kind||workAtlas.kind||'city',mood=localPixelMood();
+ const pal=localPixelPalette(kind,data.level,mood),pts=filteredMapPoints(data).slice(0,160).map(p=>({...p}));
+ const seedKey=(desc.key||'map')+'::'+(workAtlas.seed||0)+'::'+(data.kind||'world');
  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${data.width} ${data.height}" width="${data.width}" height="${data.height}">${backgroundMarkupForLocal(data)}</svg>`;
  const low=document.createElement('canvas');
  const maxSide=448;
@@ -2747,12 +2845,9 @@ async function buildLocalPixelBlob(desc){
  await new Promise((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject(new Error('Local pixel SVG load failed'));img.src=src;});
  lctx.imageSmoothingEnabled=true;
  lctx.drawImage(img,0,0,low.width,low.height);
- const mood=localPixelMood();
- const pal=localPixelPalette(data.kind||atlas?.kind||'city',data.level,mood);
- drawPixelDecoration(lctx,low.width,low.height,seedKey,data.kind||atlas?.kind||'city',data.level,pal);
+ drawPixelDecoration(lctx,low.width,low.height,seedKey,kind,data.level,pal,mood);
  const sx=low.width/Math.max(1,data.width), sy=low.height/Math.max(1,data.height);
- const pts=filteredMapPoints(data).slice(0,160);
- for(const p of pts){drawPixelMarker(lctx,p.x*sx,p.y*sy,p.type||'other',data.kind||atlas?.kind||'city',seedKey+'::'+(p.id||p.name||''),data.level);}
+ for(const p of pts){drawPixelMarker(lctx,p.x*sx,p.y*sy,p.type||'other',kind,seedKey+'::'+(p.id||p.name||''),data.level,mood);}
  if(data.level===3){
    const rng={v:hashText(seedKey+'::room')};
    for(let i=0;i<20;i++){const x=Math.floor(nextRand(rng)*(low.width-12))+3,y=Math.floor(nextRand(rng)*(low.height-12))+3;pixelFill(lctx,x,y,2,2,nextRand(rng)>.5?pal.accent:pal.green);}
@@ -2761,7 +2856,8 @@ async function buildLocalPixelBlob(desc){
    else if(/kitchen|canteen|cafeteria|dining|ครัว/.test(roomName)){for(let i=0;i<3;i++){const x=8+i*12,y=12+(i%2)*8;pixelFill(lctx,x,y,6,4,pal.panel2);pixelStroke(lctx,x,y,6,4,pal.line);}}
    else if(/office|study|library|ประชุม|โต๊ะ/.test(roomName)){for(let i=0;i<3;i++){const x=12+i*14,y=10;pixelFill(lctx,x,y,8,5,pal.panel2);pixelStroke(lctx,x,y,8,5,pal.line);}}
  }
- const out=document.createElement('canvas');out.width=data.width;out.height=data.height;
+ const out=document.createElement('canvas'),outputScale=Math.max(1,data.width/2048,data.height/2048);
+ out.width=Math.round(data.width/outputScale);out.height=Math.round(data.height/outputScale);
  const octx=out.getContext('2d',{alpha:false});
  octx.imageSmoothingEnabled=false;
  octx.fillStyle=pal.bg;octx.fillRect(0,0,out.width,out.height);
@@ -2772,16 +2868,16 @@ async function buildLocalPixelBlob(desc){
  for(let x=0;x<out.width;x+=8)octx.fillRect(x,0,1,out.height);
  return canvasToBlob(out);
 }
-async function renderLocalPixelCurrent(force=false){
- if(!atlas) return null;
- const desc=currentViewDescriptor(atlas, atlas.view, chatKey);
+async function renderLocalPixelCurrent(task){
+ if(!task||!imageTaskCurrent(task)) return null;
+ const desc=task.descriptor;
  if(!desc || desc.viewPublic===false) return null;
  const key=imageCacheKey(desc,'localpixel');
- if(!force){const cached=await getCachedRender(key).catch(()=>null);if(cached?.url)return {descriptor:desc,url:cached.url,key};}
- const blob=await buildLocalPixelBlob(desc);
+ const blob=await buildLocalPixelBlob(desc,task.atlas);
+ if(!imageTaskCurrent(task))return null;
  let cached=null;
  try{cached=await saveRender(key,blob,{provider:'localpixel',descriptor:desc,version:1});}catch(error){console.warn('[NEON MAP] Local image cache unavailable; showing the render without persistent cache',error); }
- return {descriptor:desc,url:cached?.url||URL.createObjectURL(blob),key};
+ return {descriptor:desc,url:cached?.url,key};
 }
 function setImageBusyUi(flag){
  const button=$('nm-img-generate');
@@ -2835,6 +2931,7 @@ function syncImageControls(){
 }
 async function saveImageSettingsFromUi(){
  if(!atlas)return;
+ cancelImageWork();clearVisibleImage();
  const s=imageState();
  s.enabled=$('nm-img-enabled')?.checked===true;
  s.provider=$('nm-img-provider')?.value||'none';
@@ -2850,92 +2947,81 @@ async function saveImageSettingsFromUi(){
  await persist(true);
  void syncCurrentMapImage();
 }
+// Every async result belongs to one chat, view and provider. Late completions are ignored.
+let imageTask=null,imageRevision=0;
+function cancelImageWork(){
+ imageRevision++;imageTask=null;
+ imgAbort?.abort();imgAbort=null;imgBusy=false;setImageBusyUi(false);
+}
+function imageTaskFor(desc){
+ return {revision:imageRevision,atlas,chat:chatKey,descriptor:desc,key:imageCacheKey(desc,imageState().provider)};
+}
+function imageTaskCurrent(task){
+ return imageTask===task&&task.revision===imageRevision&&panelOpen&&atlas===task.atlas&&chatKey===task.chat&&chatKey===contextKey(st())&&imageState().enabled&&imageCacheKey(currentViewDescriptor(atlas,atlas.view,chatKey),imageState().provider)===task.key;
+}
+function displayImage(task,result){
+ if(!result?.url||!imageTaskCurrent(task))return;
+ const img=$('nm-ai-image');visibleImageKey=task.key;
+ img.src=result.url;img.alt=task.descriptor.title;img.hidden=false;
+}
 async function syncCurrentMapImage(){
- const img=$('nm-ai-image');
- if(!img){return;}
  if(!panelOpen||!atlas){clearVisibleImage();return;}
  syncImageControls();
- const s=imageState();
- const desc=currentViewDescriptor(atlas, atlas.view, chatKey);
- if(!s.enabled || s.provider==='none' || !desc || desc.viewPublic===false){clearVisibleImage();return;}
- const cacheKey=imageCacheKey(desc,s.provider);
- const cached=await getCachedRender(cacheKey).catch(()=>null);
- if(cached?.url){
-   if(currentViewDescriptor(atlas,atlas.view,chatKey)?.key!==desc.key)return;
-   visibleImageKey=cacheKey;
-   img.src=cached.url;
-   img.alt=desc.title;
-   img.hidden=false;
-   return;
- }
+ const s=imageState(),desc=currentViewDescriptor(atlas,atlas.view,chatKey);
+ if(!s.enabled||s.provider==='none'||!desc||desc.viewPublic===false){cancelImageWork();clearVisibleImage();return;}
+ const key=imageCacheKey(desc,s.provider);
+ if(imageTask?.key===key&&imageTask.atlas===atlas)return;
+ cancelImageWork();
+ const task=imageTaskFor(desc);imageTask=task;
+ const cached=await getCachedRender(key).catch(()=>null);
+ if(!imageTaskCurrent(task))return;
+ if(cached?.url){displayImage(task,cached);return;}
  clearVisibleImage();
- if(s.provider==='localpixel'){
-   try{
-     imgBusy=true;setImageBusyUi(true);
-     const result=await renderLocalPixelCurrent(false);
-     if(currentViewDescriptor(atlas,atlas.view,chatKey)?.key!==desc.key)return;
-     if(result?.url){visibleImageKey=result.key;img.src=result.url;img.alt=desc.title;img.hidden=false;}
-   }catch(err){trace('Local pixel render failed: '+(err?.message||String(err)),true);
-   }finally{imgBusy=false;setImageBusyUi(false);}
-   return;
- }
- if(s.provider==='aihorde' && s.autoGenerate && !imgBusy && desc?.key && !autoImageAttempts.has(desc.key)){
-   autoImageAttempts.add(desc.key);
-   void generateCurrentMapImage(false);
+ if(['localpixel','aihorde'].includes(s.provider)&&s.autoGenerate&&!autoImageAttempts.has(desc.key)){
+  autoImageAttempts.add(desc.key);imageTask=null;await generateCurrentMapImage(false);
  }
 }
 async function generateCurrentMapImage(force=false){
- if(!atlas || imgBusy)return;
- const s=imageState();
- if(!s.enabled || s.provider==='none'){trace('Enable image mode and choose a provider first.',true);return;}
- const desc=currentViewDescriptor(atlas, atlas.view, chatKey);
- if(!desc || desc.viewPublic===false){trace('สถานที่นี้ยังไม่เปิดเผยในเรื่อง จึงยังไม่สร้างภาพประกอบ',true);return;}
- if(s.provider==='localpixel'){
-   imgBusy=true;setImageBusyUi(true);
-   try{
-     const result=await renderLocalPixelCurrent(!!force);
-     const current=currentViewDescriptor(atlas, atlas.view, chatKey);
-     if(current?.key===result?.descriptor?.key && result?.url){
-       const img=$('nm-ai-image');
-       visibleImageKey=result.key;img.src=result.url;img.alt=result.descriptor.title;img.hidden=false;
-     }
-     trace('Local pixel art ready · free/offline mode');
-   }catch(err){
-     trace('Local pixel render failed: '+(err?.message||String(err)),true);
-   }finally{imgBusy=false;setImageBusyUi(false);imgAbort=null;}
-   return;
- }
- if(s.provider==='pollinations' && !force) return; // no paid generation through automatic refreshes
- if(s.provider==='pollinations' && !sessionKeyFor('pollinations')){trace('โปรดเชื่อม Pollinations Wallet ก่อนเจนภาพ',true);return;}
- const approvedPaid=s.provider==='pollinations' ? confirm('นี่คือการสร้างภาพด้วย Pollinations.ai ซึ่งอาจมีค่าใช้จ่ายจริงตามโมเดลที่เลือก และจะใช้เครดิต Pollen ของคุณ\n\nระบบจะส่งคำขอสร้างภาพใหม่ 1 ภาพ โดยราคาจริงอาจเปลี่ยนแปลงได้\n\nยืนยันว่าต้องการสร้างภาพแบบเสียเงินครั้งนี้หรือไม่?') : false;
- if(s.provider==='pollinations' && !approvedPaid){trace('ยกเลิกการสร้างภาพแบบเสียเงิน — ไม่มีการส่งคำขอ',false);return;}
- imgAbort=new AbortController();
+ if(!atlas||imgBusy||!panelOpen||chatKey!==contextKey(st()))return;
+ const s=imageState(),desc=currentViewDescriptor(atlas,atlas.view,chatKey);
+ if(!s.enabled||s.provider==='none'){trace('Enable image mode and choose a provider first.',true);return;}
+ if(!desc||desc.viewPublic===false){trace('สถานที่นี้ยังไม่เปิดเผยในเรื่อง จึงยังไม่สร้างภาพประกอบ',true);return;}
+ if(s.provider==='pollinations'&&!force)return;
+ if(s.provider==='pollinations'&&!sessionKeyFor('pollinations')){trace('โปรดเชื่อม Pollinations Wallet ก่อนเจนภาพ',true);return;}
+ const approvedPaid=s.provider==='pollinations'&&confirm('สร้างภาพด้วย Pollinations.ai ครั้งนี้จะใช้เครดิต Pollen ของคุณ\n\nยืนยันให้ส่งคำขอสร้างภาพใหม่ 1 ภาพหรือไม่?');
+ if(s.provider==='pollinations'&&!approvedPaid)return;
+ cancelImageWork();
+ const task=imageTaskFor(desc);imageTask=task;
+ const controller=new AbortController();imgAbort=controller;
+ const credential=sessionKeyFor(s.provider);
  imgBusy=true;setImageBusyUi(true);
  try{
-   if(!force){
-     const cached=await getCachedRender(imageCacheKey(desc,s.provider)).catch(()=>null);
-     if(cached?.url){
-       const img=$('nm-ai-image');
-       visibleImageKey=imageCacheKey(desc,s.provider);img.src=cached.url;img.alt=desc.title;img.hidden=false;
-       trace('Loaded cached AI image');
-       return;
-     }
-   }
-   const workChat=chatKey;const workAtlas=atlas;
-   const result=await generateAndCacheView(atlas, atlas.view, {signal:imgAbort.signal,onStatus:(msg)=>trace(msg),approvedPaid,apiCredential:sessionKeyFor(s.provider),namespace:chatKey});
-   if(workChat!==chatKey || workAtlas!==atlas)return;
-   const current=currentViewDescriptor(atlas, atlas.view, chatKey);
-   if(current?.key===result?.descriptor?.key){
-     const img=$('nm-ai-image');
-     visibleImageKey=result.descriptor.key;img.src=result.url;img.alt=result.descriptor.title;img.hidden=false;
-   }
-   trace(`AI image ready · ${s.provider==='aihorde'?'free/community':'paid'} mode`);
- }catch(err){
-   if(err?.name!=='AbortError')trace('AI image failed: '+(err?.message||String(err)),true);
- }finally{imgBusy=false;setImageBusyUi(false);imgAbort=null;}
+  if(!force){
+   const cached=await getCachedRender(task.key).catch(()=>null);
+   if(!imageTaskCurrent(task))return;
+   if(cached?.url){displayImage(task,cached);return;}
+  }
+  let result;
+  if(s.provider==='localpixel'){
+   result=await renderLocalPixelCurrent(task);
+  }else{
+   result=await generateAndCacheView(task.atlas,task.descriptor.level,{
+    signal:controller.signal,onStatus:msg=>{if(imageTaskCurrent(task))trace(msg);},
+    approvedPaid,apiCredential:credential,namespace:task.chat
+   });
+  }
+  if(!imageTaskCurrent(task))return;
+  displayImage(task,result);
+  trace(s.provider==='localpixel'?'Local pixel art ready · free/offline mode':'AI image ready · '+(s.provider==='aihorde'?'free/community':'paid')+' mode');
+ }catch(error){
+  if(imageTaskCurrent(task)&&error?.name!=='AbortError')trace('Image failed: '+String(error?.message||error),true);
+ }finally{
+  if(imgAbort===controller){imgBusy=false;imgAbort=null;setImageBusyUi(false);}
+ }
 }
 async function clearCurrentMapImage(){
  if(!atlas)return;
+ cancelImageWork();
  const desc=currentViewDescriptor(atlas, atlas.view, chatKey);
  if(!desc)return;
  const key=imageCacheKey(desc,imageState().provider||'none');
@@ -2945,6 +3031,7 @@ async function clearCurrentMapImage(){
  trace('Cleared current cached map image');
 }
 async function clearAllMapImages(){
+ cancelImageWork();
  autoImageAttempts.clear();
  await clearAllRenders();
  clearVisibleImage();
@@ -2952,10 +3039,10 @@ async function clearAllMapImages(){
 }
 function applyTransform(){const c=$('nm-canvas');if(c)c.style.transform=`translate(${dx}px,${dy}px) scale(${zoom})`;}
 function fit(){const a=$('nm-viewport'),c=$('nm-canvas');if(!a||!c||!atlas)return;
- const data=viewData(atlas,atlas.view),w=a.clientWidth||600,h=a.clientHeight||450;
+ const data=viewData(atlas,atlas.view),w=a.clientWidth,h=a.clientHeight;if(!w||!h)return;
  zoom=Math.min(w/data.width,h/data.height)*.96;dx=(w-data.width*zoom)/2;dy=(h-data.height*zoom)/2;applyTransform();}
 function focusUser(){
- if(!atlas)return;const data=viewData(atlas,atlas.view),vp=$('nm-viewport'),loc=visibleAt(atlas);if(!vp||!loc)return;
+ if(!atlas)return;const data=viewData(atlas,atlas.view),vp=$('nm-viewport'),loc=visibleAt(atlas);if(!panelOpen||!vp?.clientWidth||!vp.clientHeight||!loc)return;
  let x=data.width/2,y=data.height/2;
  if(atlas.view===0){const p=data.points.find(p=>p.id===loc.areaId);if(p){x=p.x;y=p.y;}}
  else if(atlas.view===1){const p=data.points.find(p=>p.id===loc.buildingId);if(p){x=p.x;y=p.y;}}
@@ -2964,8 +3051,11 @@ function focusUser(){
  zoom=atlas.view<=1?Math.min(2.4,Math.max(base,base*1.4)):base;
  dx=vp.clientWidth/2-x*zoom;dy=vp.clientHeight/2-y*zoom;applyTransform();
 }
-function zoomAt(factor){const vp=$('nm-viewport');if(!vp)return;const cx=vp.clientWidth/2,cy=vp.clientHeight/2;
- const z=Math.max(.2,Math.min(4,zoom*factor));dx=cx-(cx-dx)*z/zoom;dy=cy-(cy-dy)*z/zoom;zoom=z;applyTransform();}
+function zoomAt(factor){const vp=$('nm-viewport');if(!atlas||!vp?.clientWidth||!vp.clientHeight||!Number.isFinite(factor)||factor<=0)return;
+ if(!Number.isFinite(zoom)||zoom<=0){fit();return;}
+ const data=viewData(atlas,atlas.view),base=Math.min(vp.clientWidth/data.width,vp.clientHeight/data.height)*.96;
+ const cx=vp.clientWidth/2,cy=vp.clientHeight/2,z=clampNumber(zoom*factor,base*.15,Math.max(4,base*8));
+ dx=cx-(cx-dx)*z/zoom;dy=cy-(cy-dy)*z/zoom;zoom=z;applyTransform();}
 async function goLevel(level){if(!atlas)return;selectedPoint=null;atlas.view=Math.min(3,Math.max(0,level));await persist();draw();fit();}
 function filteredMapPoints(data){
   return (data?.points||[]).filter(p=>{
@@ -3347,8 +3437,10 @@ async function exportMap(){if(!atlas)return;
  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='NEON_MAP_CHAT_'+Date.now()+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);
 }
 async function importMap(e){const file=e.target.files?.[0];if(!file)return;
- try{if(file.size>12_000_000)throw new Error('File too large');const value=JSON.parse(await file.text());
-   const newer=normalizeAtlas(value);if(!newer)throw new Error('Incompatible map format');ensureImageSettings(newer);normalizePlaceActions(newer);selectedPoint=null;inspectorExpanded=false;atlas=newer;await persist(true);fit();draw();trace('Map imported locally');
+ const intended=chatKey,started=epoch;
+ try{if(!currentChat()||!atlas||chatLoading)throw new Error(K.noChat);if(file.size>12_000_000)throw new Error('File too large');const value=JSON.parse(await file.text());
+   if(intended!==chatKey||started!==epoch||intended!==contextKey(st()))throw new Error('Chat changed while reading the file; import cancelled');
+   const newer=normalizeAtlas(value);if(!newer)throw new Error('Incompatible map format');ensureImageSettings(newer);normalizePlaceActions(newer);++epoch;cancelImageWork();autoImageAttempts.clear();selectedPoint=null;inspectorExpanded=false;atlas=newer;activeBooks=new Set(newer.extraBooks);await persist(true);fit();draw();trace('Map imported locally');
  }catch(err){trace('Import failed: '+err.message,true);}finally{e.target.value='';}}
 async function refreshBookChoices(){const sel=$('nm-extra');
  const wi=await worldInfoModule();
@@ -3373,32 +3465,34 @@ async function refreshLore(){
 }
 function scheduleLoreRefresh(){if(loreTimer)clearTimeout(loreTimer);loreTimer=setTimeout(()=>{loreTimer=null;void refreshLore();},600);}
 function scheduleTurnUpdate(forceReplay=false){pendingReplay=pendingReplay||forceReplay;if(chatTimer)clearTimeout(chatTimer);chatTimer=setTimeout(()=>{chatTimer=null;void updateFromTurn();},forceReplay?100:35);}
-async function init(){if(ready)return;ready=true;
- try{renderShell();globalThis.__NEON_MAP_TOGGLE=()=>show(!panelOpen);globalThis.__NEON_MAP_READY=true;globalThis.__NEON_MAP_ERROR='';}
+async function init(){if(ready||globalThis.__NEON_MAP_READY&&$('nm-panel'))return;ready=true;
+ try{renderShell();clearChatView();globalThis.__NEON_MAP_TOGGLE=()=>show(!panelOpen);globalThis.__NEON_MAP_SET_OPEN=show;globalThis.__NEON_MAP_READY=true;globalThis.__NEON_MAP_OPEN=false;globalThis.__NEON_MAP_ERROR='';document.dispatchEvent(new CustomEvent('neon-map:ready'));}
  catch(error){globalThis.__NEON_MAP_READY=false;globalThis.__NEON_MAP_ERROR=error?.message||String(error);console.error('[NEON MAP] Floating window initialization failed',error);return;}
 
- const ctx=st();if(ctx?.eventSource && ctx?.event_types){
-  ctx.eventSource.on(ctx.event_types.CHAT_CHANGED,()=>{if(loreTimer)clearTimeout(loreTimer);if(chatTimer)clearTimeout(chatTimer);void loadChat().then(refreshBookChoices);});
+ // Extensions can be evaluated before the host publishes its context. The UI stays usable.
+ for(let attempt=0;!st()?.eventSource&&attempt<40;attempt++)await new Promise(resolve=>setTimeout(resolve,250));
+ const ctx=st(),events=ctx?.eventTypes||ctx?.event_types;if(ctx?.eventSource&&events){
+  if(events.CHAT_CHANGED)ctx.eventSource.on(events.CHAT_CHANGED,()=>{void loadChat().then(refreshBookChoices).catch(error=>console.warn('[NEON MAP] Chat refresh failed',error));});
   // Normal replies use the constant-time incremental cursor, not a full hash
   // scan over every older message. Mutating history forces a single replay.
-  if(ctx.event_types.MESSAGE_RECEIVED)ctx.eventSource.on(ctx.event_types.MESSAGE_RECEIVED,()=>{void updateFromTurn();});
-  for(const name of ['MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED']){
-   const evt=ctx.event_types[name];if(evt)ctx.eventSource.on(evt,()=>scheduleTurnUpdate(true));
+  if(events.MESSAGE_RECEIVED)ctx.eventSource.on(events.MESSAGE_RECEIVED,()=>scheduleTurnUpdate());
+  for(const name of ['MESSAGE_EDITED','MESSAGE_SWIPED','MESSAGE_DELETED','GENERATION_ENDED']){
+   const evt=events[name];if(evt)ctx.eventSource.on(evt,()=>scheduleTurnUpdate(name!=='GENERATION_ENDED'));
   }
-  if(ctx.event_types.MESSAGE_UPDATED)ctx.eventSource.on(ctx.event_types.MESSAGE_UPDATED,(payload)=>{
+  if(events.MESSAGE_UPDATED)ctx.eventSource.on(events.MESSAGE_UPDATED,(payload)=>{
    // A normal update of the most recent reply only needs the tail check.
    // Mutations to earlier chat items still require a full replay.
    const index=Number.isInteger(payload)?payload:(Number.isInteger(payload?.index)?payload.index:null);
    scheduleTurnUpdate(index!=null && index<(atlas?.lastScanIndex??0)-1);
   });
   for(const name of ['WORLDINFO_UPDATED','WORLDINFO_SETTINGS_UPDATED']){
-   const evt=ctx.event_types[name];if(evt)ctx.eventSource.on(evt,()=>{void refreshBookChoices();scheduleLoreRefresh();});
+   const evt=events[name];if(evt)ctx.eventSource.on(evt,()=>{void refreshBookChoices();scheduleLoreRefresh();});
   }
  }
  document.addEventListener('visibilitychange',()=>saver.onVisibilityHidden());
  try{await loadChat();await refreshBookChoices();}
  catch(error){console.warn('[NEON MAP] Chat/Lorebook data did not load yet. The floating button remains available.',error);trace('เปิดแผนที่ได้ แต่ยังโหลดข้อมูลแชทไม่สำเร็จ: '+String(error?.message||error).slice(0,80),true);}
- console.log('[NEON MAP v0.9.15] Floating UI initialized; chat features are local.');
+ console.log('[NEON MAP v0.9.17] Floating UI initialized; chat features are local.');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void init(),{once:true});else void init();
 

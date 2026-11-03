@@ -1,119 +1,52 @@
-# วิธีอัป NEON MAP v0.9.10 ไป GitHub แบบส่วนตัว และติดตั้งใน SillyTavern
+# ติดตั้ง NEON MAP v0.9.17
 
-> **สำคัญ:** ชุดนี้เตรียมไว้เป็นส่วนขยายสำหรับ GitHub แล้ว แต่ยังไม่ได้ทดสอบกับเซิร์ฟเวอร์ SillyTavern จริง การทดสอบที่ทำเป็นการจำลองบริบทในเบราว์เซอร์ แนะนำให้สำรองแชทก่อนติดตั้ง
+## อัปเดตจากรุ่นเดิมด้วย ZIP
 
-## A. เตรียมไฟล์
+1. แตกไฟล์ NEON_MAP_v0.9.17_Fixed.zip
+2. เปิดโฟลเดอร์ NEON-MAP-PRIVATE ที่แตกออกมา จะพบ manifest.json, bootstrap.js, index.js และ style.css
+3. ปิด SillyTavern แล้วคัดลอกไฟล์เหล่านี้พร้อมเอกสารไปทับใน **โฟลเดอร์ส่วนขยาย NEON MAP เดิม**
+4. ตรวจว่า manifest.json อยู่ที่รากโฟลเดอร์ส่วนขยายโดยตรง ไม่มีโฟลเดอร์ซ้อนเพิ่ม
+5. เปิด SillyTavern ใหม่ เปิดใช้ NEON MAP ในรายการ Extensions แล้วรีโหลดหน้าเว็บ
+6. จะเห็นวงกลม MAP แตะเพื่อเปิดแผนที่ กด X มุมขวาบนเพื่อพับกลับ
 
-1. ดาวน์โหลดไฟล์ `NEON_MAP_v0.9.7_GitHub_Ready.zip` แล้ว **แตกไฟล์ ZIP**.
-2. ตรวจว่ามี `manifest.json`, `index.js`, `style.css`, `README.md`, `INSTALL_PRIVATE_TH.md`, `CHANGELOG_TH.md` และ `.gitignore` อยู่ในโฟลเดอร์เดียวกัน.
-3. **ห้ามอัปเฉพาะ ZIP** ถ้าต้องการติดตั้งผ่าน GitHub: GitHub ต้องมีไฟล์ `manifest.json` อยู่ที่รากของ repo.
+การทับไฟล์ส่วนขยายไม่ใช่การลบ Chat Metadata และไม่จำเป็นต้องลบแชทหรือแผนที่เดิม หลีกเลี่ยงการลง NEON MAP หลายโฟลเดอร์พร้อมกัน
 
-## B. สร้าง Private repository บน GitHub
+## ตำแหน่งติดตั้ง
 
-1. ลงชื่อเข้าใช้ [github.com](https://github.com/) แล้วกดปุ่ม **+** ด้านขวาบน → **New repository** (หรือเปิด [github.com/new](https://github.com/new)).
-2. ตั้งชื่อ เช่น `NEON-MAP-PRIVATE`.
-3. ใน **Visibility** เลือก **Private** (อย่าเลือก Public).
-4. จะเลือกสร้าง README เริ่มต้นหรือไม่ก็ได้; ชุดไฟล์นี้มี README มาแล้ว การสร้าง repo เปล่าจะง่ายกว่า.
-5. กด **Create repository**.
-6. เข้า repo → **Add file** → **Upload files** → ลากไฟล์ทั้งหมดจากโฟลเดอร์ที่แตก ZIP มาใส่ **ที่รากของ repo** (GitHub เว็บอาจซ่อนไฟล์ `.gitignore` บางกรณี; อัปเฉพาะไฟล์หลักก็ใช้ได้).
-7. เลื่อนลง ตั้ง Commit message เช่น `Add NEON MAP v0.9.10`, กด **Commit changes** / **Propose changes** ตามหน้าจอ.
-8. ตรวจในหน้าแรกของ repo ว่ามี `manifest.json` และ `index.js` โดยตรง ไม่ใช่อยู่ในโฟลเดอร์ซ้อนสองชั้น.
+| ขอบเขต | โฟลเดอร์ |
+| --- | --- |
+| เฉพาะบัญชี | SillyTavern/data/<user-handle>/extensions/NEON-MAP-PRIVATE/ |
+| ทุกบัญชี | SillyTavern/public/scripts/extensions/third-party/NEON-MAP-PRIVATE/ |
 
-ตัวอย่างโครงสร้างที่ **ถูกต้อง**:
+หากมีโฟลเดอร์ส่วนขยายเดิมชื่ออื่น ให้ทับไฟล์ในโฟลเดอร์นั้น ค่า user-handle ของการติดตั้งผู้ใช้เดียวมักเป็น default-user
 
-```text
-NEON-MAP-PRIVATE/
-├── manifest.json
-├── index.js
-├── style.css
-├── README.md
-├── INSTALL_PRIVATE_TH.md
-├── CHANGELOG_TH.md
-└── .gitignore
-```
+หากเปิด SillyTavern จากมือถือ แต่เซิร์ฟเวอร์รันบน PC หรือเครื่องอื่น ให้เปลี่ยนไฟล์บนเครื่องที่รันเซิร์ฟเวอร์ แล้วรีโหลดหน้าในมือถือ หากใช้ Termux ให้เปลี่ยนไฟล์ใน SillyTavern ที่รันอยู่ใน Termux
 
-## C. ใช้คนเดียว: วิธีติดตั้ง Private repo ที่แนะนำ
+## ถ้านำขึ้น GitHub เอง
 
-GitHub **Private repository** ต้องมีสิทธิ์เข้าถึง การนำ URL ไปวางที่ **Extensions → Install Extension** ของ SillyTavern โดยตรงอาจล้มเหลวถ้ากระบวนการ Git ของ SillyTavern ยังไม่มี credentials. ดังนั้นวิธีเสถียรกว่าคือ **clone ด้วยเครื่องมือ Git ที่ล็อกอินอยู่ แล้วติดตั้งจากโฟลเดอร์**:
+อัปโหลด **ไฟล์ที่แตกแล้ว** ไปที่ราก repository โดยเฉพาะ manifest.json, bootstrap.js, index.js และ style.css ไม่ใช่อัปโหลดเฉพาะ ZIP จากนั้นจึงอัปเดตส่วนขยายจาก repository และรีโหลดหน้าเว็บ
 
-1. ติดตั้ง [GitHub Desktop](https://desktop.github.com/) และล็อกอินบัญชี GitHub เจ้าของ repo (หรือใช้ `git clone` ที่ตั้งค่าการยืนยันตัวตนไว้แล้ว).
-2. ใน GitHub Desktop เลือก **File → Clone repository** → เลือก Private repo `NEON-MAP-PRIVATE` → **Clone**.
-3. ปิด SillyTavern ก่อนคัดลอก แล้วนำ **โฟลเดอร์ repo ทั้งโฟลเดอร์** ที่ clone มาไปไว้ที่:
-   - **เฉพาะบัญชี SillyTavern ของคุณ:** `<SillyTavern>/data/<user-handle>/extensions/NEON-MAP-PRIVATE/`
-   - **ทุกบัญชีที่ใช้ SillyTavern ตัวเดียวกัน:** `<SillyTavern>/public/scripts/extensions/third-party/NEON-MAP-PRIVATE/`
-   - ถ้าไม่ได้เปิดระบบหลายผู้ใช้ ค่า `<user-handle>` มักเป็น `default-user`.
-4. ภายในโฟลเดอร์ปลายทางต้องเห็น `manifest.json` โดยตรง.
-5. เปิด SillyTavern ใหม่ → เปิด **Extensions → Manage extensions** → ตรวจว่า **NEON MAP (Private)** ปรากฏและเปิดใช้งานอยู่.
-6. เปิดแชทตัวละคร แล้วกดปุ่มลอย **MAP**.
+ZIP นี้เป็นชุดไฟล์ที่แก้ไขแล้ว การดาวน์โหลด main.zip จาก URL ต้นทางจะได้โค้ดที่อยู่บน repository ณ เวลานั้น
 
-**กรณีอยากติดตั้งด้วย URL:** ถ้า Git บนเครื่อง/เซิร์ฟเวอร์ที่รัน SillyTavern รับรองสิทธิ์เข้า Private repo ได้อยู่แล้ว ให้ลอง **Extensions → Install Extension** และวาง `https://github.com/USERNAME/NEON-MAP-PRIVATE` (แทนชื่อผู้ใช้จริง); เลือก install for current user ถ้ามีตัวเลือก. ถ้าขึ้น not found/authentication failed ให้ใช้วิธี Clone + Copy ข้างบนแทน อย่าใส่ GitHub token ลงใน URL ที่แชร์หรือไฟล์ README.
+## วิธีใช้
 
-## D. ตั้งค่าให้ไม่มีค่าเครดิต
+- **วงกลม MAP:** แตะเพื่อเปิด ลากเพื่อย้ายตำแหน่ง
+- **X มุมขวาบน:** พับหน้าต่าง NEON MAP กลับเป็นวงกลม
+- **ปุ่มย่อ/ขยาย:** ปรับความสูง หรือใช้แถบจับบนสุด
+- **มุมซ้ายบน:** ลากปรับกว้างและสูง
+- **Info บนมือถือ:** เปิดเครื่องมือ หมุด และการตั้งค่า กด Map เพื่อกลับ
+- **X บนการ์ดสถานที่ย่อย:** ปิดเฉพาะข้อมูลสถานที่นั้น
+- **Auto-open:** ปิดเป็นค่าเริ่มต้น เปิดได้จากเครื่องมือ
+- **Escape เมื่อโฟกัสอยู่ใน MAP:** ย่อข้อมูลสถานที่หรือพับหน้าต่างตามลำดับ
 
-1. เปิด NEON MAP → ส่วน **MAP IMAGE / PIXEL ART**.
-2. เปิด **เลเยอร์ภาพประกอบแผนที่**.
-3. เลือก Provider: **Local Pixel Art (ฟรี / offline)**.
-4. เปิด **เจนอัตโนมัติ** ได้ เพราะ Local Pixel ใช้ CPU/Canvas ในเบราว์เซอร์ ไม่เรียก API สร้างภาพ.
-5. ถ้าจะป้องกันความผิดพลาด ให้หลีกเลี่ยงการเลือก **Pollinations.ai** ซึ่งมีเครดิตและมีหน้าต่างยืนยัน.
+## เมื่อไม่เห็นปุ่ม
 
-### สถานะค่าใช้จ่าย
+1. ตรวจว่าเปิดใช้ส่วนขยาย และไฟล์ manifest.json ระบุ version 0.9.17 พร้อม js เป็น bootstrap.js
+2. ตรวจว่าทับ bootstrap.js, index.js และ style.css ครบ แล้วรีสตาร์ตเซิร์ฟเวอร์และรีโหลดหน้า
+3. ตรวจว่าไม่ได้เปิดใช้ส่วนขยาย NEON MAP ซ้ำหลายชุด
+4. ถ้าปุ่มแสดง MAP ! ให้แตะเพื่ออ่านข้อผิดพลาด
+5. เปิดได้อีกทางจากปุ่ม Open NEON MAP ในหน้าการตั้งค่าส่วนขยาย
 
-| โหมด | ค่าเครดิต/การแจ้งเตือน |
-|---|---|
-| Off / แผนที่ Local | ไม่มีค่า API ภาพ |
-| Local Pixel Art | ไม่เสียเครดิต, ไม่เรียก API ภาพ |
-| AI Horde | บริการชุมชนโดยทั่วไปฟรี แต่มีคิว/ข้อตกลงของผู้ให้บริการ |
-| Pollinations.ai | อาจมีค่าใช้จ่ายจริง; มีข้อความเตือนและ popup ยืนยันหลายชั้น ก่อนส่งงานแบบเสียเงิน |
+หากแผนที่ว่างแต่เปิดหน้าต่างได้ ให้เลือกแชทก่อน สถานที่ที่ยังไม่ปรากฏในเรื่องอาจถูกซ่อนตามการตั้งค่าหมอกและการเปิดเผย Lorebook
 
-## E. อัปเดตทีหลัง
-
-- ถ้า clone ผ่าน GitHub Desktop ให้กด **Fetch origin** → **Pull origin** แล้วคัดลอกโฟลเดอร์ส่วนขยายที่อัปเดตไปทับโฟลเดอร์ SillyTavern จากนั้นรีสตาร์ต.
-- ถ้าติดตั้งแบบ Git URL ผ่าน SillyTavern ให้ใช้คำสั่งอัปเดตส่วนขยายของ SillyTavern แต่ Private repo ต้องยังยืนยันตัวตนได้.
-- ก่อนเปลี่ยนรุ่นใหญ่ ให้ Export JSON ของ NEON MAP และสำรองแชท.
-
-## F. ถ้าใช้มือถือ Android
-
-- อัปโหลดไฟล์ไป Private GitHub ผ่านเว็บบนมือถือได้ แต่ **การแตกไฟล์/ลากอัปหลายไฟล์และ Clone ผ่าน GitHub Desktop** สะดวกกว่าบนคอมพิวเตอร์.
-- ถ้าคุณเปิด SillyTavern บนคอม/เซิร์ฟเวอร์ แต่เล่นผ่านมือถือ ให้ติดตั้งโฟลเดอร์ส่วนขยายบน **เครื่องที่รันเซิร์ฟเวอร์ SillyTavern** ไม่ใช่แค่โทรศัพท์.
-- ถ้ารัน SillyTavern ใน Termux ให้ใช้ Git ที่ล็อกอินได้บน Termux แล้ว clone/copy ไปยังโฟลเดอร์ user extension ของอินสแตนซ์นั้น.
-
-## ปัญหาที่พบบ่อย
-
-- **ไม่เห็น extension:** ตรวจ `manifest.json` อยู่รากโฟลเดอร์, ตรวจโฟลเดอร์ปลายทาง, รีสตาร์ต/รีโหลดหน้า, เปิด Manage extensions.
-- **Private repo clone ไม่สำเร็จ:** ใช้ GitHub Desktop หรือตั้ง Git credentials แบบปลอดภัยก่อน; ห้ามฝัง token ลงในไฟล์/URL.
-- **ไม่มี MAP:** ต้องเปิดแชทตัวละครที่มี `chatId` ก่อน, ตรวจ Console ของเบราว์เซอร์ว่ามี JavaScript error หรือไม่.
-- **Lorebook ไม่มีบนแผนที่:** ตรวจว่าได้ผูก Lorebook กับแชท/ตัวละครแล้ว และข้อมูลได้รับการเปิดเผยในฉาก; แผนที่อาจเป็นผังประมาณการ.
-- **Local Pixel ไม่แสดง:** ตรวจว่าเปิดเลเยอร์และเลือก Provider Local Pixel, ตรวจว่าเบราว์เซอร์รองรับ Canvas และ IndexedDB, เปิด Console ดู error.
-
-### แหล่งอ้างอิง
-- SillyTavern official: https://docs.sillytavern.app/for-contributors/writing-extensions/
-- SillyTavern extensions: https://docs.sillytavern.app/extensions/
-- GitHub create repo: https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository
-- GitHub upload files: https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
-
-
-## v0.9.10 UI controls
-
-- Floating round MAP bubble: drag to move, tap to open. The saved position stays in your browser.
-- Bottom map sheet: header minus/expand buttons adjust height. Drag the top strip to resize height; top-left corner adjusts height and width.
-- Mobile: Info toggles between the atlas and notes/settings. Close X returns to the floating bubble.
-- All UI layout settings stay in local browser storage; no new prompt tokens or image credits.
-
-## กรณีไม่มีปุ่มลอยแม้อัปเดตแล้ว
-
-- ตรวจว่า Extensions > Manage Extensions แสดง `NEON MAP` **เวอร์ชัน 0.9.10** และเปิดใช้งาน
-- รีโหลด SillyTavern แบบไม่ใช้แคช และหากจำเป็นให้ปิด/เปิดเซิร์ฟเวอร์ใหม่
-- หากเห็นปุ่ม `MAP !` ให้กดเพื่ออ่านข้อผิดพลาดที่ตรวจพบ
-- หากไม่เห็นทั้ง `MAP` และ `MAP !` เป็นไปได้ว่าส่วนขยายไม่ได้โหลดเลย (ตรวจรายการส่วนขยาย/คอนโซลเบราว์เซอร์/Server Log)
-- `manifest.json` ต้องอยู่ที่ root ของส่วนขยาย และ `js` ต้องชี้ `bootstrap.js`
-
-
-## การเปิดแผนที่จากในแชท (v0.9.10)
-
-1. เปิดแชทตัวละครใน SillyTavern เหมือนปกติ
-2. มองหา **ปุ่มกลมสีเขียวฟ้า MAP** ที่อยู่ด้านขวาบริเวณเหนือช่องพิมพ์ (ตัวปุ่มอยู่ภายในพื้นที่แชทจริง)
-3. กด MAP หน้าต่างแผนที่เปิดซ้อนขึ้นด้านล่างในหน้าแชทเดิม ไม่ต้องย้อนออกจากแชท
-4. กดปุ่ม **X มุมขวาบนของหน้าต่างแผนที่** เพื่อพับกลับไปเป็นปุ่ม MAP
-5. กดค้างแล้วลากปุ่ม MAP เพื่อย้ายตำแหน่งภายในหน้าแชท โปรแกรมจะพยายามจำตำแหน่งบนอุปกรณ์นี้
-
-ถ้าปุ่ม MAP ไม่ขึ้นเลย ให้ดู Manage Extensions ว่าส่วนขยาย NEON MAP เป็น **v0.9.10** และเปิดใช้งานอยู่ ต้องรีสตาร์ตเซิร์ฟเวอร์และรีโหลดหน้าเบราว์เซอร์เพื่อให้ไฟล์ bootstrap.js ใหม่ทำงาน หากเห็น **MAP !** สามารถกดเพื่ออ่านข้อความผิดพลาดได้ อย่าลง Repository เดียวซ้ำหลายชื่อเพราะอาจเกิดการเปิดแผนที่ซ้อนกัน
+รุ่นนี้ผ่านการตรวจในเบราว์เซอร์พร้อม host จำลอง รายละเอียดอยู่ใน TEST_REPORT_TH.md
