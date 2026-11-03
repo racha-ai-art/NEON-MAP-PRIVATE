@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.12: SillyTavern lower-left hamburger/options menu integration.
+/* NEON MAP v0.9.13: SillyTavern lower-left hamburger/options menu integration.
  * No floating launcher. Menu action opens/closes the existing map panel. */
 const NM_MENU_ID='neon-map-options-entry';
 let nmError='',nmStarted=false;
@@ -55,13 +55,13 @@ function nmOpenFromMenu(e){
   // Close SillyTavern's options dropdown without leaving the chat.
   if(next){
    const options=document.getElementById('options');
-   if(options?.classList.contains('open'))options.classList.remove('open');
+   if(options)options.style.display='none';
   }
  }catch(err){nmError=String(err?.message||err);console.error('[NEON MAP] Menu open failed',err);alert('NEON MAP: '+nmError);}
 }
 function nmFindMenu(){
  // #options is the native dropdown opened by #options_button at lower left.
- for(const sel of ['#options','#options_menu','#options_container','#options_content']){
+ for(const sel of ['#options > .options-content','#options .options-content']){
   const el=document.querySelector(sel);
   if(el&&el.id!=='options_button')return el;
  }
@@ -74,13 +74,13 @@ function nmMountMenu(){
  let item=document.getElementById(NM_MENU_ID);
  if(item?.parentElement!==host){item?.remove();item=null;}
  if(!item){
-  item=document.createElement('div');
+  item=document.createElement('a');
   item.id=NM_MENU_ID;
-  item.className='menu_button interactable';
+  item.className='neon-map-native-option';
   item.setAttribute('role','button');
   item.setAttribute('tabindex','0');
   item.setAttribute('title','เปิดแผนที่ NEON MAP โดยไม่ออกจากแชท');
-  const icon=document.createElement('i');icon.className='fa-solid fa-map-location-dot';
+  const icon=document.createElement('i');icon.className='fa-lg fa-solid fa-map-location-dot';
   icon.setAttribute('aria-hidden','true');
   const label=document.createElement('span');label.textContent='NEON MAP';
   item.append(icon,label);
