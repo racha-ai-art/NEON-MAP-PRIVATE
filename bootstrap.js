@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.14: SillyTavern lower-left hamburger/options menu integration.
+/* NEON MAP v0.9.15: SillyTavern lower-left hamburger/options menu integration.
  * No floating launcher. Menu action opens/closes the existing map panel. */
 const NM_MENU_ID='neon-map-options-entry';
 let nmError='',nmStarted=false;
@@ -61,7 +61,7 @@ function nmOpenFromMenu(e){
 }
 function nmFindMenu(){
  // #options is the native dropdown opened by #options_button at lower left.
- for(const sel of ['#options > .options-content','#options .options-content']){
+ for(const sel of ['#options > .options-content','#options .options-content','#options']){
   const el=document.querySelector(sel);
   if(el&&el.id!=='options_button')return el;
  }
@@ -98,6 +98,8 @@ function nmStart(){
  document.addEventListener('neon-map:visibility',()=>{nmHideLaunchers();});
  const observer=new MutationObserver(()=>{nmMountMenu();});
  observer.observe(document.body,{childList:true,subtree:true});
+ document.getElementById('options_button')?.addEventListener('click',()=>setTimeout(nmMountMenu,0));
+ setInterval(nmMountMenu,1500);
  // Import asynchronously, so the menu appears even if map engine fails.
  import('./index.js').then(()=>{nmMountMenu();}).catch(err=>{nmError=String(err?.message||err);console.error('[NEON MAP] Load failed',err);});
 }
