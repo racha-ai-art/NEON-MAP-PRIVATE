@@ -299,3 +299,8 @@ html body > #neon-map-v3 #nm-panel:not([hidden]){
 
 /* The active in-chat MAP button replaces the body floating button, rather than overlapping it. */
 html body > #neon-map-v3.nm-chat-button-ready #nm-launch:not([hidden]){display:none!important;}
+/* v0.9.11: explicit visibility and responsive in-chat map panel. */
+html body > #neon-map-v3 #nm-panel:not([hidden]){display:flex!important;flex-direction:column!important;max-width:calc(100vw - 10px)!important;max-height:calc(100dvh - 14px)!important;overflow:hidden!important;}
+html body > #neon-map-v3 #nm-panel[hidden]{display:none!important;}
+html body > #neon-map-v3 #nm-panel:not([hidden]) .nm-body{flex:1 1 auto!important;min-height:0!important;}
+@media(max-width:800px){html body > #neon-map-v3 #nm-panel:not([hidden]){left:auto!important;top:auto!important;right:5px!important;bottom:5px!important;width:calc(100vw - 10px)!important;height:min(68dvh,calc(100dvh - 14px))!important;}}
