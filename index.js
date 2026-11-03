@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.13 — SillyTavern third-party extension (private build).
+/* NEON MAP v0.9.15 — SillyTavern third-party extension (private build).
  * Do not re-inject the Standalone Demo fixture into production.
  * Local atlas / Local Pixel Art do not call paid APIs.
  */
@@ -1742,7 +1742,7 @@ function inspectArea(atlas,{level,point,focus,radius=180}={},chat=[]){
 return {REVEALED_ONLY_RULE,publicStoryLines,placeRevealed,inspectArea};
 })();
 __nmModules['place-cards.js']=(()=>{
-// NEON MAP v0.9.13: local-only place bookmarks with safe legacy-ref recovery.
+// NEON MAP v0.9.15: local-only place bookmarks with safe legacy-ref recovery.
 // This state never changes character positions, story text, image generation or LLM prompts.
 const {viewData}=__nmModules['atlas.js'];
 const str=(value,size=120)=>String(value??'').trim().slice(0,size);
@@ -2211,7 +2211,7 @@ async function generateAndCacheView(atlas, level, {signal, onStatus, approvedPai
 return {IMAGE_DEFAULTS,ensureImageSettings,getCachedRender,saveRender,clearRender,clearAllRenders,currentViewDescriptor,buildPrompt,cancelHordeJob,generateAndCacheView};
 })();
 __nmModules['index.js']=(()=>{
-// NEON MAP v0.9.13: stable local atlas + optional user-triggered image generation.
+// NEON MAP v0.9.15: stable local atlas + optional user-triggered image generation.
 // Never inject prompts into chat generation. Optional AI image calls are direct provider requests, separate from roleplay.
 const {t}=__nmModules['labels.js'];
 const {backgroundSvg}=__nmModules['backgrounds.js'];
@@ -2309,73 +2309,40 @@ function setDetailsOpen(open){
 }
 function installFloatingControls(){
  loadFloatingPrefs();
- const launch=$('nm-launch');panelDimensions();
- if(!launch){
-  const close=$('nm-close');if(close)close.addEventListener('click',()=>show(false));
-  window.addEventListener('resize',()=>{panelDimensions();if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);});
-  return;
- }
- let dragging=null,suppressClick=false;
- launch.addEventListener('pointerdown',event=>{
-  if(event.button!=null&&event.button!==0)return;
-  const rect=launch.getBoundingClientRect();
-  dragging={id:event.pointerId,x:event.clientX,y:event.clientY,left:rect.left,top:rect.top,moved:false};
-  try{launch.setPointerCapture(event.pointerId);}catch{}
- });
- launch.addEventListener('pointermove',event=>{
-  if(!dragging||event.pointerId!==dragging.id)return;
-  const diffX=event.clientX-dragging.x,diffY=event.clientY-dragging.y;
-  if(!dragging.moved&&Math.hypot(diffX,diffY)<=7)return;
-  dragging.moved=true;
-  floatingUI.x=dragging.left+diffX;floatingUI.y=dragging.top+diffY;
-  launchPosition();
- });
- const endLaunchDrag=event=>{
-  if(!dragging||event.pointerId!==dragging.id)return;
-  if(dragging.moved){suppressClick=true;saveFloatingPrefs();}
-  dragging=null;
- };
- launch.addEventListener('pointerup',endLaunchDrag);
- launch.addEventListener('pointercancel',event=>{endLaunchDrag(event);});
- launch.addEventListener('click',event=>{
-   if(suppressClick){suppressClick=false;event.preventDefault();return;}
-   show(true);
- });
+ panelDimensions();
  const wireResize=(id,both)=>{
   const grip=$(id);if(!grip)return;
   let active=null;
   grip.addEventListener('pointerdown',event=>{
-    if(event.button!=null&&event.button!==0)return;
-    event.preventDefault();event.stopPropagation();
-    const rect=$('nm-panel').getBoundingClientRect();
-    active={id:event.pointerId,x:event.clientX,y:event.clientY,width:rect.width,height:rect.height};
-    try{grip.setPointerCapture(event.pointerId);}catch{}
+   if(event.button!=null&&event.button!==0)return;
+   event.preventDefault();event.stopPropagation();
+   const rect=$('nm-panel').getBoundingClientRect();
+   active={id:event.pointerId,x:event.clientX,y:event.clientY,width:rect.width,height:rect.height};
+   try{grip.setPointerCapture(event.pointerId);}catch{}
   });
   grip.addEventListener('pointermove',event=>{
-    if(!active||active.id!==event.pointerId)return;
-    floatingUI.height=active.height+active.y-event.clientY;
-    if(both)floatingUI.width=active.width+active.x-event.clientX;
-    panelDimensions();
-    if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);
+   if(!active||active.id!==event.pointerId)return;
+   floatingUI.height=active.height+active.y-event.clientY;
+   if(both)floatingUI.width=active.width+active.x-event.clientX;
+   panelDimensions();
+   if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);
   });
-  const finish=event=>{
-    if(!active||active.id!==event.pointerId)return;
-    active=null;saveFloatingPrefs();
-  };
+  const finish=event=>{if(active?.id===event.pointerId){active=null;saveFloatingPrefs();}};
   grip.addEventListener('pointerup',finish);
   grip.addEventListener('pointercancel',finish);
  };
  wireResize('nm-sheet-resizer',false);
  wireResize('nm-resize-corner',true);
- $('nm-sheet-resizer').addEventListener('keydown',event=>{
-   if(event.key==='ArrowUp'){event.preventDefault();adjustPanelSize(40);}
-   if(event.key==='ArrowDown'){event.preventDefault();adjustPanelSize(-40);}
+ $('nm-sheet-resizer')?.addEventListener('keydown',event=>{
+  if(event.key==='ArrowUp'){event.preventDefault();adjustPanelSize(40);}
+  if(event.key==='ArrowDown'){event.preventDefault();adjustPanelSize(-40);}
  });
- $('nm-window-shrink').addEventListener('click',()=>adjustPanelSize(-120));
- $('nm-window-expand').addEventListener('click',()=>adjustPanelSize(120));
- $('nm-details-toggle').addEventListener('click',()=>setDetailsOpen(!floatingUI.detailsOpen));
- window.addEventListener('resize',()=>{launchPosition();panelDimensions();if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);});
+ $('nm-window-shrink')?.addEventListener('click',()=>adjustPanelSize(-120));
+ $('nm-window-expand')?.addEventListener('click',()=>adjustPanelSize(120));
+ $('nm-details-toggle')?.addEventListener('click',()=>setDetailsOpen(!floatingUI.detailsOpen));
+ window.addEventListener('resize',()=>{panelDimensions();if(panelOpen&&!floatingUI.detailsOpen)requestAnimationFrame(fit);});
 }
+
 const REGION_RADIUS={0:205,1:225,2:155};
 // Credentials live only in this page's JavaScript memory; never write them to Chat Metadata.
 const sessionImageKeys=new Map();
@@ -2503,7 +2470,7 @@ function renderShell(){
  <section id="nm-panel" role="region" aria-label="NEON MAP floating bottom map" hidden>
  <div id="nm-sheet-resizer" role="separator" tabindex="0" aria-label="Drag up or down to resize map height" aria-orientation="horizontal"><span></span></div><button type="button" id="nm-resize-corner" aria-label="Drag to resize map width and height" title="Drag to resize">&#8698;</button>
  <header class="nm-head"><span class="nm-brand">N<span>NEON ATLAS</span></span><div class="nm-head-right"><span class="nm-noai" id="nm-ai-mode">LOCAL MAP</span><button type="button" id="nm-details-toggle" aria-label="Toggle map details" aria-pressed="false">&#9776; Info</button><button type="button" id="nm-window-shrink" title="Shrink map window" aria-label="Shrink map window">&#8722;</button><button type="button" id="nm-window-expand" title="Expand map window" aria-label="Expand map window">&#10530;</button><button type="button" id="nm-close" title="Close to floating button" aria-label="Close map to floating button">&#10005;</button></div></header>
- <div class="nm-summary"><strong>v0.9.13 · Open from chat · Floating dock</strong><span id="nm-status">${K.noChat}</span></div>
+ <div class="nm-summary"><strong>v0.9.15 · Open from chat · Floating dock</strong><span id="nm-status">${K.noChat}</span></div>
  <nav id="nm-levels" aria-label="Map levels"><button data-level="0">1 · ${K.world}</button><button data-level="1">2 · ${K.site}</button><button data-level="2">3 · ${K.floor}</button><button data-level="3">4 · ${K.room}</button></nav>
  <div class="nm-topline"><button id="nm-prev" title="Previous level">&#10094;</button><span id="nm-location">${K.location}</span><button id="nm-next" title="Next level">&#10095;</button><button id="nm-follow" title="${K.follow}">&#9678;</button></div>
  <div class="nm-body"><div id="nm-viewport" aria-label="Interactive schematic map" tabindex="0">
@@ -3431,7 +3398,7 @@ async function init(){if(ready)return;ready=true;
  document.addEventListener('visibilitychange',()=>saver.onVisibilityHidden());
  try{await loadChat();await refreshBookChoices();}
  catch(error){console.warn('[NEON MAP] Chat/Lorebook data did not load yet. The floating button remains available.',error);trace('เปิดแผนที่ได้ แต่ยังโหลดข้อมูลแชทไม่สำเร็จ: '+String(error?.message||error).slice(0,80),true);}
- console.log('[NEON MAP v0.9.13] Floating UI initialized; chat features are local.');
+ console.log('[NEON MAP v0.9.15] Floating UI initialized; chat features are local.');
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>void init(),{once:true});else void init();
 
