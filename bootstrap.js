@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.13: SillyTavern lower-left hamburger/options menu integration.
+/* NEON MAP v0.9.14: SillyTavern lower-left hamburger/options menu integration.
  * No floating launcher. Menu action opens/closes the existing map panel. */
 const NM_MENU_ID='neon-map-options-entry';
 let nmError='',nmStarted=false;
@@ -86,8 +86,10 @@ function nmMountMenu(){
   item.append(icon,label);
   item.addEventListener('click',nmOpenFromMenu);
   item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();nmOpenFromMenu(e);}});
-  host.append(item);
+  host.prepend(item);
  }
+ // Always keep NEON MAP above the native items, including on mobile.
+ if(host.firstElementChild!==item)host.prepend(item);
 }
 function nmStart(){
  if(nmStarted)return;nmStarted=true;
