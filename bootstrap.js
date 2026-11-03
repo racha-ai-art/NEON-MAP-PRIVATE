@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.15: SillyTavern lower-left hamburger/options menu integration.
+/* NEON MAP v0.9.16: SillyTavern lower-left hamburger/options menu integration.
  * No floating launcher. Menu action opens/closes the existing map panel. */
 const NM_MENU_ID='neon-map-options-entry';
 let nmError='',nmStarted=false;
@@ -38,7 +38,7 @@ function nmRepair(open){
 }
 function nmHideLaunchers(){
  for(const id of ['neon-map-startup-bubble','neon-map-chat-toggle','nm-launch']){
-  const b=document.getElementById(id);if(b){b.hidden=true;b.style.setProperty('display','none','important');}
+  const b=document.getElementById(id);if(b){b.remove();}
  }
 }
 function nmOpenFromMenu(e){
@@ -91,15 +91,25 @@ function nmMountMenu(){
  // Always keep NEON MAP above the native items, including on mobile.
  if(host.firstElementChild!==item)host.prepend(item);
 }
+function nmMountSettings(){
+ const host=document.getElementById('extensions_settings');
+ if(!host)return;
+ let box=document.getElementById('neon-map-settings-entry');
+ if(box)return;
+ box=document.createElement('div');box.id='neon-map-settings-entry';box.className='extension_container';
+ const title=document.createElement('div');title.textContent='NEON MAP';title.style.cssText='font-weight:bold;margin:8px 0';
+ const button=document.createElement('button');button.type='button';button.className='menu_button';button.textContent='Open NEON MAP';button.addEventListener('click',nmOpenFromMenu);
+ box.append(title,button);host.prepend(box);
+}
 function nmStart(){
  if(nmStarted)return;nmStarted=true;
  globalThis.__NEON_MAP_BOOTSTRAPPED=true;
- nmMountMenu();
+ nmMountMenu();nmMountSettings();
  document.addEventListener('neon-map:visibility',()=>{nmHideLaunchers();});
- const observer=new MutationObserver(()=>{nmMountMenu();});
+ const observer=new MutationObserver(()=>{nmMountMenu();nmMountSettings();nmHideLaunchers();});
  observer.observe(document.body,{childList:true,subtree:true});
  document.getElementById('options_button')?.addEventListener('click',()=>setTimeout(nmMountMenu,0));
- setInterval(nmMountMenu,1500);
+ setInterval(()=>{nmMountMenu();nmMountSettings();nmHideLaunchers();},1500);
  // Import asynchronously, so the menu appears even if map engine fails.
  import('./index.js').then(()=>{nmMountMenu();}).catch(err=>{nmError=String(err?.message||err);console.error('[NEON MAP] Load failed',err);});
 }
