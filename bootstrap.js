@@ -1,4 +1,4 @@
-/* NEON MAP v0.9.10 — reliable in-chat launcher and independent loader.
+/* NEON MAP v0.9.11 — reliable in-chat launcher and independent loader.
  * No generation/prompt injection. No paid service calls. */
 const NM_BOOT_ID = 'neon-map-startup-bubble';
 const NM_CHAT_ID = 'neon-map-chat-toggle';
@@ -13,14 +13,63 @@ function nmMainOpen(){
  const panel = document.getElementById('nm-panel');
  return panel ? !panel.hidden : false;
 }
+function nmRepairPanel(open){
+ const panel=document.getElementById('nm-panel');
+ const root=document.getElementById('neon-map-v3');
+ if(!panel||!root)return false;
+ if(root.parentElement!==document.body)document.body.append(root);
+ root.style.setProperty('position','fixed','important');
+ root.style.setProperty('inset','0','important');
+ root.style.setProperty('width','100vw','important');
+ root.style.setProperty('height','100dvh','important');
+ root.style.setProperty('display','block','important');
+ root.style.setProperty('visibility','visible','important');
+ root.style.setProperty('opacity','1','important');
+ root.style.setProperty('z-index','2147482000','important');
+ root.style.setProperty('pointer-events','none','important');
+ if(open){
+  panel.hidden=false;
+  panel.style.setProperty('display','flex','important');
+  panel.style.setProperty('visibility','visible','important');
+  panel.style.setProperty('opacity','1','important');
+  panel.style.setProperty('pointer-events','auto','important');
+  panel.style.setProperty('position','fixed','important');
+  panel.style.setProperty('z-index','2147483001','important');
+  panel.style.setProperty('left','auto','important');
+  panel.style.setProperty('top','auto','important');
+  panel.style.setProperty('right',innerWidth<=800?'5px':'12px','important');
+  panel.style.setProperty('bottom',innerWidth<=800?'5px':'12px','important');
+  panel.style.setProperty('width',Math.min(innerWidth-10,innerWidth<=800?innerWidth-10:920)+'px','important');
+  panel.style.setProperty('height',Math.max(230,Math.min(innerHeight-14,Math.round(innerHeight*.68)))+'px','important');
+ }else{
+  panel.hidden=true;
+  panel.style.removeProperty('display');
+ }
+ return true;
+}
 function nmToggleMap(event){
  event?.preventDefault?.();event?.stopPropagation?.();
  if(nmMainReady()){
-  globalThis.__NEON_MAP_TOGGLE();
-  nmSyncState();
+  try{
+   globalThis.__NEON_MAP_TOGGLE();
+   const open=nmMainOpen();
+   nmRepairPanel(open);
+   nmSyncState();
+   if(open)requestAnimationFrame(()=>{
+    nmRepairPanel(true);
+    const rect=document.getElementById('nm-panel')?.getBoundingClientRect();
+    if(!rect||rect.width<100||rect.height<100){
+     nmRepairPanel(false);nmSyncState();
+     alert('NEON MAP: แผนที่เปิดไม่สำเร็จ โปรดส่งภาพหน้าจอและข้อความใน Console');
+    }
+   });
+  }catch(error){
+   nmRepairPanel(false);nmSyncState();nmShowError(error);
+   alert('NEON MAP: '+String(error?.message||error).slice(0,250));
+  }
   return;
  }
- const error = nmLastError || globalThis.__NEON_MAP_ERROR || 'ส่วนขยายยังโหลดแผนที่ไม่สำเร็จ โปรดตรวจ Manage Extensions ว่าเป็น v0.9.10 และลองรีโหลด SillyTavern';
+ const error = nmLastError || globalThis.__NEON_MAP_ERROR || 'ส่วนขยายยังโหลดแผนที่ไม่สำเร็จ โปรดตรวจ Manage Extensions ว่าเป็น v0.9.11 และลองรีโหลด SillyTavern';
  alert('NEON MAP — MAP ไม่พร้อมใช้งาน\n\n'+String(error).slice(0,350));
 }
 function nmChatHostVisible(){
